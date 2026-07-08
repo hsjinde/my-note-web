@@ -41,6 +41,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
   useEffect(() => { localStorage.setItem('dark', dark ? '1' : '0'); }, [dark]);
+  useEffect(() => { if (route.page !== 'article') document.title = 'my-note'; }, [route]);
 
   const requireLogin = useCallback((then: () => void) => {
     if (authed) then();
@@ -73,7 +74,7 @@ export default function App() {
       {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
       <div ref={mainRef} style={{ overflowY: 'auto', minHeight: 0 }}>
         <div className="mobile-topbar">
-          <div className="menu-toggle" onClick={() => setSidebarOpen(true)}>☰</div>
+          <button className="menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="開啟選單">☰</button>
           <span style={{ font: "700 16px 'Noto Serif TC',serif", color: 'var(--hd)' }}>my-note</span>
         </div>
         {page}
@@ -81,14 +82,15 @@ export default function App() {
       {searchOpen && <SearchOverlay index={index} onClose={() => setSearchOpen(false)} />}
       {loginOpen && (
         <div onClick={() => setLoginOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(58,50,38,.28)', zIndex: 60, display: 'grid', placeItems: 'center' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(340px, 90vw)', background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, padding: '26px 28px', boxShadow: '0 24px 60px rgba(26,20,12,.35)' }}>
-            <div style={{ font: "600 18px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 14 }}>登入</div>
-            <input type="password" value={password} autoFocus placeholder="站台密碼"
+          <div role="dialog" aria-modal="true" aria-label="登入" onClick={(e) => e.stopPropagation()} style={{ width: 'min(340px, 90vw)', background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, padding: '26px 28px', boxShadow: '0 24px 60px rgba(26,20,12,.35)' }}>
+            <div style={{ font: "600 18px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 6 }}>登入</div>
+            <div style={{ fontSize: 13, color: 'var(--m2)', marginBottom: 14 }}>編輯與問資料庫是站主專用功能，需要站台密碼。</div>
+            <input type="password" value={password} autoFocus placeholder="站台密碼" aria-label="站台密碼"
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && doLogin()}
-              style={{ width: '100%', border: '1px solid var(--ln)', borderRadius: 8, padding: '10px 12px', background: 'var(--pn)', color: 'var(--hd)', font: "15px 'Noto Sans TC',sans-serif", outline: 'none' }} />
-            {loginError && <div style={{ color: 'var(--ac)', fontSize: 13, marginTop: 8 }}>密碼錯誤</div>}
-            <div onClick={doLogin} style={{ marginTop: 16, textAlign: 'center', fontSize: 13.5, fontWeight: 500, color: '#fff', background: 'var(--ac)', borderRadius: 8, padding: '9px 0', cursor: 'pointer' }}>登入</div>
+              style={{ width: '100%', border: '1px solid var(--ln)', borderRadius: 8, padding: '10px 12px', background: 'var(--pn)', color: 'var(--hd)', font: "15px 'Noto Sans TC',sans-serif" }} />
+            {loginError && <div role="alert" style={{ color: 'var(--ac)', fontSize: 13, marginTop: 8 }}>密碼錯誤，請再試一次。</div>}
+            <button className="btn-reset" onClick={doLogin} style={{ marginTop: 16, width: '100%', textAlign: 'center', fontSize: 13.5, fontWeight: 500, color: '#fff', background: 'var(--ac)', borderRadius: 8, padding: '10px 0' }}>登入</button>
           </div>
         </div>
       )}

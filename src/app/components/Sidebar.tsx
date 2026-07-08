@@ -18,24 +18,24 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
 
   return (
     <div className={`sidebar${drawerOpen ? ' open' : ''}`} style={{ borderRight: '1px solid var(--ln)', padding: '28px 22px 22px', display: 'flex', flexDirection: 'column', gap: 18, minHeight: 0 }}>
-      <div onClick={() => (location.hash = '#/')} style={{ font: "700 22px 'Noto Serif TC',serif", color: 'var(--hd)', cursor: 'pointer' }}>my-note</div>
-      <div onClick={onOpenSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 8, padding: '8px 12px', color: 'var(--mu)', fontSize: 13.5, cursor: 'pointer' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+      <a className="btn-reset" href="#/" style={{ font: "700 22px 'Noto Serif TC',serif", color: 'var(--hd)' }}>my-note</a>
+      <button className="btn-reset" onClick={onOpenSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 8, padding: '8px 12px', color: 'var(--m2)', fontSize: 13.5, width: '100%' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
         搜尋<span style={{ marginLeft: 'auto', font: "11px 'IBM Plex Mono',monospace", background: 'var(--ci)', border: '1px solid var(--ln)', borderRadius: 4, padding: '1px 5px' }}>⌘K</span>
-      </div>
+      </button>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 13.5, overflowY: 'auto' }}>
         <div style={{ ...label, marginBottom: 6 }}>總覽</div>
         {tree.map((node) => (
           <FolderBranch key={node.fullPath} node={node} open={open} setOpen={setOpen} currentPath={currentPath} />
         ))}
-        <div onClick={() => (location.hash = '#/tag/')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', marginTop: 8 }}>
+        <a className="btn-reset" href="#/tag/" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, marginTop: 8 }}>
           <span style={{ color: 'var(--mu)', fontSize: 10 }}>#</span>標籤
-        </div>
-        <div onClick={() => (location.hash = '#/db')}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', background: route.page === 'db' ? 'var(--ab)' : undefined, color: route.page === 'db' ? 'var(--ac)' : undefined, fontWeight: route.page === 'db' ? 500 : 400 }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" strokeWidth="2"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg>
+        </a>
+        <a className="btn-reset" href="#/db"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, background: route.page === 'db' ? 'var(--ab)' : undefined, color: route.page === 'db' ? 'var(--ac)' : undefined, fontWeight: route.page === 'db' ? 500 : 400 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" strokeWidth="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg>
           資料庫
-        </div>
+        </a>
       </div>
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {current && (
@@ -56,10 +56,10 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div onClick={onToggleDark} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--ln)', borderRadius: 20, padding: 4, background: 'var(--pn)', cursor: 'pointer' }}>
+          <button className="btn-reset" onClick={onToggleDark} aria-label={dark ? '切換為亮色主題' : '切換為深色主題'} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--ln)', borderRadius: 20, padding: 4, background: 'var(--pn)' }}>
             <span style={{ width: 24, height: 24, borderRadius: '50%', background: dark ? 'transparent' : '#f6d36b88', display: 'grid', placeItems: 'center', fontSize: 12, color: 'var(--hd)' }}>☀</span>
             <span style={{ width: 24, height: 24, borderRadius: '50%', background: dark ? 'rgba(236,149,102,.22)' : 'transparent', display: 'grid', placeItems: 'center', fontSize: 12, color: 'var(--hd)' }}>☾</span>
-          </div>
+          </button>
           <span style={{ font: "11px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>my-note</span>
         </div>
       </div>
@@ -74,10 +74,10 @@ function FolderBranch({ node, open, setOpen, currentPath }: {
   const isOpen = open[node.fullPath];
   return (
     <div>
-      <div onClick={() => setOpen((o) => ({ ...o, [node.fullPath]: !o[node.fullPath] }))}
-        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', fontWeight: isOpen ? 500 : 400 }}>
-        <span style={{ color: 'var(--mu)', fontSize: 10 }}>{isOpen ? '▾' : '▸'}</span>{node.name}
-      </div>
+      <button className="btn-reset" onClick={() => setOpen((o) => ({ ...o, [node.fullPath]: !o[node.fullPath] }))} aria-expanded={!!isOpen}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, fontWeight: isOpen ? 500 : 400, width: '100%' }}>
+        <span style={{ color: 'var(--mu)', fontSize: 10 }} aria-hidden="true">{isOpen ? '▾' : '▸'}</span>{node.name}
+      </button>
       {isOpen && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, marginLeft: 13, borderLeft: '1px solid var(--ln)', paddingLeft: 10 }}>
           {node.children.map((child) => (
@@ -86,10 +86,10 @@ function FolderBranch({ node, open, setOpen, currentPath }: {
           {node.notes.map((n) => {
             const active = currentPath === n.path;
             return (
-              <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
-                style={{ padding: '5px 8px', borderRadius: 6, cursor: 'pointer', background: active ? 'var(--ab)' : undefined, color: active ? 'var(--ac)' : undefined, fontWeight: active ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <a key={n.path} className="btn-reset" href={`#/note/${encodeURIComponent(n.path)}`} aria-current={active ? 'page' : undefined}
+                style={{ padding: '5px 8px', borderRadius: 6, background: active ? 'var(--ab)' : undefined, color: active ? 'var(--ac)' : undefined, fontWeight: active ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {n.title}
-              </div>
+              </a>
             );
           })}
         </div>

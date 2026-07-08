@@ -18,18 +18,18 @@ export default function Home({ index }: { index: SiteIndex }) {
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 44, justifyContent: 'flex-end' }}>
         <span style={{ font: "500 11px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)' }}>排序</span>
-        <div style={{ display: 'flex', border: '1px solid var(--ln)', borderRadius: 8, background: 'var(--pn)', padding: 3, gap: 2 }}>
-          <span onClick={() => setSort('recent')} style={pill(sort === 'recent')}>最近編輯</span>
-          <span onClick={() => setSort('name')} style={pill(sort === 'name')}>名稱</span>
+        <div role="group" aria-label="排序方式" style={{ display: 'flex', border: '1px solid var(--ln)', borderRadius: 8, background: 'var(--pn)', padding: 3, gap: 2 }}>
+          <button className="btn-reset" onClick={() => setSort('recent')} aria-pressed={sort === 'recent'} style={pill(sort === 'recent')}>最近編輯</button>
+          <button className="btn-reset" onClick={() => setSort('name')} aria-pressed={sort === 'name'} style={pill(sort === 'name')}>名稱</button>
         </div>
       </div>
       <div>
         {notes.map((n) => (
-          <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 2px', borderBottom: '1px solid var(--ls)', cursor: 'pointer' }}>
-            <span style={{ fontSize: 15.5 }}>{n.title}</span>
-            <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{n.date ?? ''}</span>
-          </div>
+          <a key={n.path} className="btn-reset" href={`#/note/${encodeURIComponent(n.path)}`}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '10px 2px', borderBottom: '1px solid var(--ls)' }}>
+            <span style={{ fontSize: 15.5, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</span>
+            <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)', whiteSpace: 'nowrap' }}>{n.date ?? ''}</span>
+          </a>
         ))}
       </div>
     </div>
