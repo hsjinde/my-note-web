@@ -1,5 +1,5 @@
 import { parse as parseYaml } from 'yaml';
-import type { NoteMeta } from '../shared/types';
+import type { NoteMeta, SiteIndex } from '../shared/types';
 
 export const PUBLIC_FOLDERS = ['個人學習', '好工具推薦', '工作專案'];
 export const AI_EXTRA_FOLDERS = ['wiki'];
@@ -46,5 +46,30 @@ export function parseNote(path: string, md: string): NoteMeta {
     links,
     linksTo: [],
     private: !isPublicPath(path),
+  };
+}
+
+export function buildIndex(files: { path: string; content: string }[]): SiteIndex {
+  const notes = files.filter((f) => isIndexedPath(f.path)).map((f) => parseNote(f.path, f.content));
+  const byKey = new Map<string, string>(); // 檔名/title（小寫）→ path
+  for (const n of notes) {
+    byKey.set(n.path.split('/').pop()!.replace(/\.md$/, '').toLowerCase(), n.path);
+    byKey.set(n.title.toLowerCase(), n.path);
+  }
+  for (const n of notes) {
+    n.linksTo = n.links
+      .map((t) => byKey.get(t.toLowerCase()))
+      .filter((p): p is string => !!p && p !== n.path);
+  }
+  return { notes, builtAt: new Date().toISOString() };
+}
+
+export function publicIndex(index: SiteIndex): SiteIndex {
+  const pubPaths = new Set(index.notes.filter((n) => !n.private).map((n) => n.path));
+  return {
+    builtAt: index.builtAt,
+    notes: index.notes
+      .filter((n) => !n.private)
+      .map((n) => ({ ...n, linksTo: n.linksTo.filter((p) => pubPaths.has(p)) })),
   };
 }
