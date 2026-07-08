@@ -7,6 +7,7 @@ import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
 import { fullSync, incrementalSync, rebuildIndexFromKV, type PushPayload } from './sync';
 import { GitHub, ShaConflictError } from './github';
+import { ask } from './ask';
 
 export interface Env {
   NOTES: KVNamespace;
@@ -95,6 +96,12 @@ app.post('/api/webhook', async (c) => {
   if (!ok) return c.json({ error: 'bad signature' }, 401);
   const payload = JSON.parse(raw) as PushPayload;
   return c.json(await incrementalSync(c.env.NOTES, github(c.env), payload));
+});
+
+app.post('/api/ask', requireAuth, async (c) => {
+  const { question } = await c.req.json<{ question: string }>();
+  if (!question?.trim()) return c.json({ error: 'empty question' }, 400);
+  return c.json({ answer: await ask(c.env, question.trim()) });
 });
 
 export default app;
