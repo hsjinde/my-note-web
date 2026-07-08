@@ -1,0 +1,50 @@
+import { parse as parseYaml } from 'yaml';
+import type { NoteMeta } from '../shared/types';
+
+export const PUBLIC_FOLDERS = ['個人學習', '好工具推薦', '工作專案'];
+export const AI_EXTRA_FOLDERS = ['wiki'];
+
+const inFolders = (path: string, folders: string[]) =>
+  folders.some((f) => path.startsWith(f + '/'));
+
+export function isPublicPath(path: string): boolean {
+  return path.endsWith('.md') && inFolders(path, PUBLIC_FOLDERS);
+}
+export function isIndexedPath(path: string): boolean {
+  return path.endsWith('.md') && inFolders(path, [...PUBLIC_FOLDERS, ...AI_EXTRA_FOLDERS]);
+}
+
+export function splitFrontmatter(md: string): { fm: Record<string, unknown>; body: string } {
+  const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (!m) return { fm: {}, body: md };
+  let fm: Record<string, unknown> = {};
+  try { fm = (parseYaml(m[1]) as Record<string, unknown>) ?? {}; } catch { fm = {}; }
+  return { fm, body: md.slice(m[0].length) };
+}
+
+const WIKILINK = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g;
+
+export function parseNote(path: string, md: string): NoteMeta {
+  const { fm, body } = splitFrontmatter(md);
+  const filename = path.split('/').pop()!.replace(/\.md$/, '');
+  const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : [];
+  const rawDate = fm.date ?? fm.updated ?? null;
+  const links = [...body.matchAll(WIKILINK)].map((m) => m[1].trim());
+  const plain = body
+    .replace(WIKILINK, (_, t) => t)
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/[#>*`_\[\]!|-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return {
+    path,
+    title: typeof fm.title === 'string' && fm.title ? fm.title : filename,
+    folder: path.split('/')[0],
+    tags,
+    date: rawDate ? String(rawDate).slice(0, 10) : null,
+    excerpt: plain.slice(0, 160),
+    links,
+    linksTo: [],
+    private: !isPublicPath(path),
+  };
+}
