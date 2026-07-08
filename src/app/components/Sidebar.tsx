@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { SiteIndex } from '../../shared/types';
 import type { Route } from '../router';
 
-export default function Sidebar({ index, route, dark, currentPath, onToggleDark, onOpenSearch }: {
-  index: SiteIndex; route: Route; dark: boolean; currentPath?: string;
+export default function Sidebar({ index, route, dark, currentPath, open: drawerOpen, onToggleDark, onOpenSearch }: {
+  index: SiteIndex; route: Route; dark: boolean; currentPath?: string; open: boolean;
   onToggleDark: () => void; onOpenSearch: () => void;
 }) {
   const folders: [string, SiteIndex['notes']][] = [];
@@ -21,7 +21,7 @@ export default function Sidebar({ index, route, dark, currentPath, onToggleDark,
   const positions = [[62, 30], [166, 38], [146, 82], [42, 70], [190, 78]];
 
   return (
-    <div style={{ borderRight: '1px solid var(--ln)', padding: '28px 22px 22px', display: 'flex', flexDirection: 'column', gap: 18, minHeight: 0 }}>
+    <div className={`sidebar${drawerOpen ? ' open' : ''}`} style={{ borderRight: '1px solid var(--ln)', padding: '28px 22px 22px', display: 'flex', flexDirection: 'column', gap: 18, minHeight: 0 }}>
       <div onClick={() => (location.hash = '#/')} style={{ font: "700 22px 'Noto Serif TC',serif", color: 'var(--hd)', cursor: 'pointer' }}>my-note</div>
       <div onClick={onOpenSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 8, padding: '8px 12px', color: 'var(--mu)', fontSize: 13.5, cursor: 'pointer' }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>

@@ -18,6 +18,7 @@ export default function App() {
   const [dark, setDark] = useState(localStorage.getItem('dark') === '1');
   const [authed, setAuthed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
@@ -27,7 +28,7 @@ export default function App() {
   const reloadIndex = useCallback(() => { fetchIndex().then(setIndex).catch(() => {}); }, []);
   useEffect(() => { reloadIndex(); me().then(setAuthed).catch(() => {}); }, [reloadIndex]);
   useEffect(() => {
-    const onHash = () => { setRoute(parseHash(location.hash)); mainRef.current?.scrollTo(0, 0); };
+    const onHash = () => { setRoute(parseHash(location.hash)); mainRef.current?.scrollTo(0, 0); setSidebarOpen(false); };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -66,14 +67,21 @@ export default function App() {
   }, [route, index, authed, requireLogin, reloadIndex]);
 
   return (
-    <div data-dark={dark ? 'true' : 'false'} style={{ height: '100vh', display: 'grid', gridTemplateColumns: '280px 1fr', background: 'var(--bg)', color: 'var(--tx)', transition: 'background .25s', position: 'relative', overflow: 'hidden' }}>
-      <Sidebar index={index} route={route} dark={dark} currentPath={currentPath}
+    <div className="app-shell" data-dark={dark ? 'true' : 'false'} style={{ height: '100vh', display: 'grid', gridTemplateColumns: '280px 1fr', background: 'var(--bg)', color: 'var(--tx)', transition: 'background .25s', position: 'relative', overflow: 'hidden' }}>
+      <Sidebar index={index} route={route} dark={dark} currentPath={currentPath} open={sidebarOpen}
         onToggleDark={() => setDark(!dark)} onOpenSearch={() => setSearchOpen(true)} />
-      <div ref={mainRef} style={{ overflowY: 'auto', minHeight: 0 }}>{page}</div>
+      {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
+      <div ref={mainRef} style={{ overflowY: 'auto', minHeight: 0 }}>
+        <div className="mobile-topbar">
+          <div className="menu-toggle" onClick={() => setSidebarOpen(true)}>☰</div>
+          <span style={{ font: "700 16px 'Noto Serif TC',serif", color: 'var(--hd)' }}>my-note</span>
+        </div>
+        {page}
+      </div>
       {searchOpen && <SearchOverlay index={index} onClose={() => setSearchOpen(false)} />}
       {loginOpen && (
         <div onClick={() => setLoginOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(58,50,38,.28)', zIndex: 60, display: 'grid', placeItems: 'center' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 340, background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, padding: '26px 28px', boxShadow: '0 24px 60px rgba(26,20,12,.35)' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(340px, 90vw)', background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, padding: '26px 28px', boxShadow: '0 24px 60px rgba(26,20,12,.35)' }}>
             <div style={{ font: "600 18px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 14 }}>登入</div>
             <input type="password" value={password} autoFocus placeholder="站台密碼"
               onChange={(e) => setPassword(e.target.value)}

@@ -29,14 +29,14 @@ export default function SearchOverlay({ index, onClose }: { index: SiteIndex; on
   };
   return (
     <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(58,50,38,.28)', zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', left: '50%', top: 56, transform: 'translateX(-50%)', width: 720, maxWidth: '90%', background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, boxShadow: '0 24px 60px rgba(26,20,12,.35)', overflow: 'hidden' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', left: '50%', top: 56, transform: 'translateX(-50%)', width: 'min(720px, 92vw)', background: 'var(--bg)', border: '1px solid var(--ln)', borderRadius: 14, boxShadow: '0 24px 60px rgba(26,20,12,.35)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--ln)' }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
           <input ref={inputRef} value={query} onChange={(e) => { setQuery(e.target.value); setSelected(0); }} onKeyDown={onKey}
             placeholder="搜尋筆記…" style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', font: "17px 'Noto Sans TC',sans-serif", color: 'var(--hd)' }} />
           <span onClick={onClose} style={{ font: "11px 'IBM Plex Mono',monospace", color: 'var(--mu)', border: '1px solid var(--ln)', borderRadius: 4, padding: '2px 6px', cursor: 'pointer' }}>ESC</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', minHeight: 340 }}>
+        <div className="search-grid" style={{ display: 'grid', minHeight: 340 }}>
           <div style={{ borderRight: '1px solid var(--ln)', padding: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {results.map((n, i) => (
               <div key={n.path} onClick={() => open(n.path)} onMouseEnter={() => setSelected(i)}
@@ -49,7 +49,7 @@ export default function SearchOverlay({ index, onClose }: { index: SiteIndex; on
             ))}
             {results.length === 0 && <div style={{ padding: 12, fontSize: 13, color: 'var(--mu)' }}>沒有符合的筆記</div>}
           </div>
-          <div style={{ padding: '18px 22px' }}>
+          <div className="search-preview" style={{ padding: '18px 22px' }}>
             {sel && (<>
               <div style={{ font: "600 16px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 10 }}>{sel.title}</div>
               <div style={{ fontSize: 13.5, lineHeight: 2 }}>{highlight(sel.excerpt, query.trim())}</div>

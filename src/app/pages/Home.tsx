@@ -21,7 +21,7 @@ export default function Home({ index }: { index: SiteIndex }) {
     background: active ? 'var(--ab)' : 'transparent', color: active ? 'var(--ac)' : 'inherit', fontWeight: active ? 500 : 400,
   } as const);
   return (
-    <div style={{ padding: '64px 120px', maxWidth: 900 }}>
+    <div className="page-pad-home" style={{ maxWidth: 900 }}>
       <div style={{ font: "700 40px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 12 }}>my-note</div>
       <p style={{ margin: '0 0 26px', fontSize: 16, lineHeight: 1.9, maxWidth: 520 }}>
         學習筆記與作品集。整理自我的 Obsidian vault——涵蓋 LLM 學習、SRE 工具鏈與工作專案。

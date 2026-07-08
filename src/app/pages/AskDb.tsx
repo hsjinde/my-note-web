@@ -27,7 +27,7 @@ export default function AskDb({ index, authed, requireLogin }: {
   };
 
   return (
-    <div style={{ padding: '52px 80px', maxWidth: 900 }}>
+    <div className="page-pad-md" style={{ maxWidth: 900 }}>
       <div style={{ fontSize: 13, color: 'var(--mu)', marginBottom: 14 }}>
         <span onClick={() => (location.hash = '#/')} style={{ cursor: 'pointer' }}>首頁</span> / 資料庫
       </div>

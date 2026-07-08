@@ -78,8 +78,8 @@ export default function Article({ path, index, requireLogin, onSaved }: {
             ⚠ 遠端已有新版本（sha 衝突）。請複製你的修改、重新整理頁面後再編輯。
           </div>
         )}
-        <textarea value={draft} onChange={(e) => setDraft(e.target.value)} spellCheck={false}
-          style={{ flex: 1, minHeight: 0, resize: 'none', border: 'none', outline: 'none', background: 'var(--bg)', color: 'var(--tx)', padding: '28px 56px', font: "14px/2 'IBM Plex Mono',monospace" }} />
+        <textarea className="editor-pad" value={draft} onChange={(e) => setDraft(e.target.value)} spellCheck={false}
+          style={{ flex: 1, minHeight: 0, resize: 'none', border: 'none', outline: 'none', background: 'var(--bg)', color: 'var(--tx)', font: "14px/2 'IBM Plex Mono',monospace" }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 24px', borderTop: '1px solid var(--ln)', font: "11.5px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>
           <span>Markdown</span><span>{draft.length} 字元</span><span style={{ marginLeft: 'auto' }}>⌘S 儲存 · Esc 取消</span>
         </div>
@@ -88,9 +88,9 @@ export default function Article({ path, index, requireLogin, onSaved }: {
   }
 
   return (
-    <div style={{ padding: '34px 316px 60px 56px', position: 'relative', maxWidth: 1400 }}>
+    <div className="article-pad" style={{ position: 'relative', maxWidth: 1400 }}>
       {rendered.toc.length > 0 && (
-        <div style={{ position: 'fixed', right: 32, top: 34, width: 224, background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 10, padding: '16px 18px', boxShadow: '0 4px 14px rgba(58,50,38,.06)' }}>
+        <div className="toc-panel" style={{ background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 10, padding: '16px 18px', boxShadow: '0 4px 14px rgba(58,50,38,.06)' }}>
           <div style={{ font: "500 11px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)', marginBottom: 10 }}>目錄</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
             {rendered.toc.map((h) => (

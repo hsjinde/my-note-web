@@ -9,7 +9,7 @@ export default function TagPage({ tag, index }: { tag: string; index: SiteIndex 
   }, [index]);
   const matched = tag ? index.notes.filter((n) => n.tags.includes(tag)) : [];
   return (
-    <div style={{ padding: '52px 80px', maxWidth: 760 }}>
+    <div className="page-pad-md" style={{ maxWidth: 760 }}>
       <div style={{ fontSize: 13, color: 'var(--mu)', marginBottom: 14 }}>
         <span onClick={() => (location.hash = '#/')} style={{ cursor: 'pointer' }}>首頁</span> / 標籤
       </div>
