@@ -45,7 +45,7 @@ describe('login/logout/me', () => {
 
 describe('PUT /api/note/*', () => {
   const kvInit = {
-    'note:個人學習/a.md': JSON.stringify({ content: '---\ntitle: 筆記A\n---\n舊', sha: 'old' }),
+    'shard:個人學習': JSON.stringify({ '個人學習/a.md': { content: '---\ntitle: 筆記A\n---\n舊', sha: 'old' } }),
     'meta:index': JSON.stringify(buildIndex([{ path: '個人學習/a.md', content: '---\ntitle: 筆記A\n---\n舊' }])),
   };
   it('未登入 401', async () => {
@@ -71,7 +71,9 @@ describe('PUT /api/note/*', () => {
     expect(await res.json()).toEqual({ sha: 'new1' });
     expect(captured.message).toBe('docs: 網頁編輯「筆記A」');
     const kv = (e as { NOTES: { get: (k: string, t: string) => Promise<unknown> } }).NOTES;
-    expect(await kv.get('note:個人學習/a.md', 'json')).toEqual({ content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1' });
+    expect(await kv.get('shard:個人學習', 'json')).toEqual({
+      '個人學習/a.md': { content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1' },
+    });
   });
   it('sha 衝突回 409', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('conflict', { status: 409 })));

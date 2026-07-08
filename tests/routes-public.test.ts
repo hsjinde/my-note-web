@@ -32,8 +32,8 @@ describe('GET /api/index', () => {
 
 describe('GET /api/note/*', () => {
   const kv = {
-    'note:個人學習/a.md': JSON.stringify({ content: '# A', sha: 's1' }),
-    'note:wiki/k.md': JSON.stringify({ content: '秘密', sha: 's2' }),
+    'shard:個人學習': JSON.stringify({ '個人學習/a.md': { content: '# A', sha: 's1' } }),
+    'shard:wiki': JSON.stringify({ 'wiki/k.md': { content: '秘密', sha: 's2' } }),
   };
   it('公開筆記回內容與 sha', async () => {
     const res = await app.request(`/api/note/${encodeURIComponent('個人學習/a.md')}`, {}, env(kv));

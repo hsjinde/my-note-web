@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it, expect } from 'vitest';
 import { gzipSync } from 'node:zlib';
 import { parseTar, parseTarGz } from '../src/worker/tarball';

@@ -3,7 +3,7 @@
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-06-01",
   "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
-  "kv_namespaces": [{ "binding": "NOTES", "id": "00000000000000000000000000000000" }],
+  "kv_namespaces": [{ "binding": "NOTES", "id": "d48ef8aab78046eda232f444fb902e12" }],
   "ai": { "binding": "AI" },
   "vars": {
     "GITHUB_REPO": "hsjinde/my-note",

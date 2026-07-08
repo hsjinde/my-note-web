@@ -5,7 +5,7 @@ import { isPublicPath, publicIndex, parseNote } from './content';
 import type { SiteIndex } from '../shared/types';
 import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
-import { fullSync, incrementalSync, rebuildIndexFromKV, type PushPayload } from './sync';
+import { fullSync, incrementalSync, rebuildIndexFromKV, shardKey, type PushPayload } from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
 
@@ -38,7 +38,8 @@ app.get('/api/index', async (c) => {
 app.get('/api/note/*', async (c) => {
   const path = notePathFromUrl(c.req.url, '/api/note/');
   if (!isPublicPath(path)) return c.json({ error: 'not found' }, 404);
-  const note = (await c.env.NOTES.get(`note:${path}`, 'json')) as { content: string; sha: string } | null;
+  const shard = (await c.env.NOTES.get(shardKey(path), 'json')) as Record<string, { content: string; sha: string }> | null;
+  const note = shard?.[path];
   if (!note) return c.json({ error: 'not found' }, 404);
   return c.json({ path, content: note.content, sha: note.sha });
 });
@@ -77,7 +78,10 @@ app.put('/api/note/*', requireAuth, async (c) => {
   const title = parseNote(path, content).title;
   try {
     const result = await github(c.env).putFile(path, content, `docs: 網頁編輯「${title}」`, sha);
-    await c.env.NOTES.put(`note:${path}`, JSON.stringify({ content, sha: result.sha }));
+    const key = shardKey(path);
+    const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
+    shard[path] = { content, sha: result.sha };
+    await c.env.NOTES.put(key, JSON.stringify(shard));
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ sha: result.sha });
   } catch (e) {
