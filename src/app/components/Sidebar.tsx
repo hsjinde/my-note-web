@@ -1,17 +1,13 @@
-import { useState } from 'react';
+import { useState, type Dispatch, type SetStateAction } from 'react';
 import type { SiteIndex } from '../../shared/types';
 import type { Route } from '../router';
+import { buildFolderTree, type FolderNode } from '../folderTree';
 
 export default function Sidebar({ index, route, dark, currentPath, open: drawerOpen, onToggleDark, onOpenSearch }: {
   index: SiteIndex; route: Route; dark: boolean; currentPath?: string; open: boolean;
   onToggleDark: () => void; onOpenSearch: () => void;
 }) {
-  const folders: [string, SiteIndex['notes']][] = [];
-  const folderMap = new Map<string, SiteIndex['notes']>();
-  for (const n of index.notes) {
-    if (!folderMap.has(n.folder)) { folderMap.set(n.folder, []); folders.push([n.folder, folderMap.get(n.folder)!]); }
-    folderMap.get(n.folder)!.push(n);
-  }
+  const tree = buildFolderTree(index.notes);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const current = currentPath ? index.notes.find((n) => n.path === currentPath) : undefined;
   const neighbors = current
@@ -29,26 +25,8 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 13.5, overflowY: 'auto' }}>
         <div style={{ ...label, marginBottom: 6 }}>總覽</div>
-        {folders.map(([folder, notes]) => (
-          <div key={folder}>
-            <div onClick={() => setOpen((o) => ({ ...o, [folder]: !o[folder] }))}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', fontWeight: open[folder] ? 500 : 400 }}>
-              <span style={{ color: 'var(--mu)', fontSize: 10 }}>{open[folder] ? '▾' : '▸'}</span>{folder}
-            </div>
-            {open[folder] && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 1, marginLeft: 13, borderLeft: '1px solid var(--ln)', paddingLeft: 10 }}>
-                {notes.map((n) => {
-                  const active = currentPath === n.path;
-                  return (
-                    <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
-                      style={{ padding: '5px 8px', borderRadius: 6, cursor: 'pointer', background: active ? 'var(--ab)' : undefined, color: active ? 'var(--ac)' : undefined, fontWeight: active ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {n.title}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        {tree.map((node) => (
+          <FolderBranch key={node.fullPath} node={node} open={open} setOpen={setOpen} currentPath={currentPath} />
         ))}
         <div onClick={() => (location.hash = '#/tag/')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', marginTop: 8 }}>
           <span style={{ color: 'var(--mu)', fontSize: 10 }}>#</span>標籤
@@ -85,6 +63,37 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
           <span style={{ font: "11px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>my-note</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FolderBranch({ node, open, setOpen, currentPath }: {
+  node: FolderNode; open: Record<string, boolean>;
+  setOpen: Dispatch<SetStateAction<Record<string, boolean>>>; currentPath?: string;
+}) {
+  const isOpen = open[node.fullPath];
+  return (
+    <div>
+      <div onClick={() => setOpen((o) => ({ ...o, [node.fullPath]: !o[node.fullPath] }))}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, cursor: 'pointer', fontWeight: isOpen ? 500 : 400 }}>
+        <span style={{ color: 'var(--mu)', fontSize: 10 }}>{isOpen ? '▾' : '▸'}</span>{node.name}
+      </div>
+      {isOpen && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, marginLeft: 13, borderLeft: '1px solid var(--ln)', paddingLeft: 10 }}>
+          {node.children.map((child) => (
+            <FolderBranch key={child.fullPath} node={child} open={open} setOpen={setOpen} currentPath={currentPath} />
+          ))}
+          {node.notes.map((n) => {
+            const active = currentPath === n.path;
+            return (
+              <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
+                style={{ padding: '5px 8px', borderRadius: 6, cursor: 'pointer', background: active ? 'var(--ab)' : undefined, color: active ? 'var(--ac)' : undefined, fontWeight: active ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {n.title}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
