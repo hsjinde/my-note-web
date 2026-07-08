@@ -192,16 +192,29 @@ export default function Article({ path, index, requireLogin, onSaved }: {
       {justSaved && (
         <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid var(--a2)', background: 'var(--ab)', borderRadius: 8, padding: '10px 14px', fontSize: 13.5, color: 'var(--ac)', marginBottom: 24 }}>✓ 已儲存變更並 commit 到 my-note</div>
       )}
+      {rendered.toc.length > 0 && (
+        <details className="toc-inline">
+          <summary>目錄</summary>
+          <nav aria-label="目錄">
+            {rendered.toc.map((h) => (
+              <a key={h.id} href={`#/note/${encodeURIComponent(path)}`} onClick={(e) => { e.preventDefault(); document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' }); }}
+                style={{ paddingLeft: h.level === 3 ? 14 : 0, color: h.level === 3 ? 'var(--m2)' : 'var(--tx)', textDecoration: 'none' }}>
+                {h.text}
+              </a>
+            ))}
+          </nav>
+        </details>
+      )}
       <div className="md-body" dangerouslySetInnerHTML={{ __html: rendered.html }} />
       {backlinks.length > 0 && (
         <div style={{ borderTop: '1px solid var(--ln)', paddingTop: 24, marginTop: 40 }}>
           <div style={{ font: "500 12px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)', marginBottom: 14 }}>反向連結 · {backlinks.length}</div>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 640 }}>
             {backlinks.map((b) => (
               <a key={b.path} className="btn-reset" href={`#/note/${encodeURIComponent(b.path)}`}
-                style={{ width: 300, maxWidth: '100%', background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 10, padding: '16px 18px' }}>
-                <div style={{ font: "600 15px 'Noto Serif TC',serif", color: 'var(--hd)', marginBottom: 6 }}>{b.title}</div>
-                <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--m2)' }}>{b.excerpt.length > 60 ? `${b.excerpt.slice(0, 60)}…` : b.excerpt}</div>
+                style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '10px 2px', borderBottom: '1px solid var(--ls)' }}>
+                <span style={{ font: "600 15px 'Noto Serif TC',serif", color: 'var(--hd)', whiteSpace: 'nowrap' }}>{b.title}</span>
+                <span style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--m2)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.excerpt}</span>
               </a>
             ))}
           </div>
