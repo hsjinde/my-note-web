@@ -1,0 +1,13 @@
+{
+  "name": "my-note-web",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-06-01",
+  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+  "kv_namespaces": [{ "binding": "NOTES", "id": "00000000000000000000000000000000" }],
+  "ai": { "binding": "AI" },
+  "vars": {
+    "GITHUB_REPO": "hsjinde/my-note",
+    "GITHUB_BRANCH": "main",
+    "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+  }
+}

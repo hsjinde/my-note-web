@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Noto Sans TC',system-ui,sans-serif}
+a{color:#c26b3e}a:hover{color:#a8623a}
+:root{--bg:#fbf7ef;--pn:#fff;--ln:#e4d9c6;--ls:#f1ead9;--tx:#5a4f3e;--hd:#3a3226;--mu:#c2b39a;--ac:#c26b3e;--ab:rgba(194,107,62,.10);--a2:#d9a06b;--qb:rgba(194,107,62,.06);--cb:#f4eee1;--ci:#efe7d4;--rw:rgba(228,217,198,.25);--hl:#f6d36b88}
+[data-dark="true"]{--bg:#1c1917;--pn:#262220;--ln:#38322d;--ls:#2a2622;--tx:#d9d2c7;--hd:#f2ece1;--mu:#8d8375;--ac:#ec9566;--ab:rgba(236,149,102,.13);--a2:#b06a42;--qb:rgba(236,149,102,.07);--cb:#161311;--ci:#38322d;--rw:rgba(56,50,45,.35);--hl:rgba(246,211,107,.28)}
+</style></helmet>
+<div data-dark="{{dark}}" style="height:100vh;display:grid;grid-template-columns:280px 1fr;background:var(--bg);color:var(--tx);transition:background .25s;position:relative;overflow:hidden">
+
+  <!-- ══ 側欄 ══ -->
+  <div style="border-right:1px solid var(--ln);padding:28px 22px 22px;display:flex;flex-direction:column;gap:18px;min-height:0">
+    <div onClick="{{goHome}}" style="font:700 22px 'Noto Serif TC',serif;color:var(--hd);cursor:pointer">my-note</div>
+    <div onClick="{{openSearch}}" style="display:flex;align-items:center;gap:8px;background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:8px 12px;color:var(--mu);font-size:13.5px;cursor:pointer" style-hover="border-color:var(--a2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>搜尋<span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;background:var(--ci);border:1px solid var(--ln);border-radius:4px;padding:1px 5px">⌘K</span></div>
+    <div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px;overflow-y:auto">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu);margin-bottom:6px">總覽</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="background:var(--ls)"><span style="color:var(--mu);font-size:10px">▸</span>個人學習</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="background:var(--ls)"><span style="color:var(--mu);font-size:10px">▾</span><span style="font-weight:500">好工具推薦</span></div>
+      <div style="display:flex;flex-direction:column;gap:1px;margin-left:13px;border-left:1px solid var(--ln);padding-left:10px">
+        <sc-if value="{{onArticle}}" hint-placeholder-val="{{true}}"><div onClick="{{goArticle}}" style="padding:5px 8px;border-radius:6px;background:var(--ab);color:var(--ac);font-weight:500;cursor:pointer">OpenCode MCP 配置指南</div></sc-if>
+        <sc-if value="{{notOnArticle}}" hint-placeholder-val="{{false}}"><div onClick="{{goArticle}}" style="padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="background:var(--ls)">OpenCode MCP 配置指南</div></sc-if>
+        <div onClick="{{goArticle}}" style="padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="background:var(--ls)">oc-go-cc 設定指南</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer" style-hover="background:var(--ls)"><span style="color:var(--mu);font-size:10px">▸</span>工作專案</div>
+      <div onClick="{{goTag}}" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;margin-top:8px" style-hover="background:var(--ls)"><span style="color:var(--mu);font-size:10px">#</span>標籤</div>
+      <div onClick="{{goDb}}" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;background:{{dbNavBg}};color:{{dbNavFg}};font-weight:{{dbNavWt}}" style-hover="background:var(--ls)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"></path><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg>資料庫</div>
+    </div>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{showGraph}}" hint-placeholder-val="{{true}}">
+      <div>
+        <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu);margin-bottom:8px">關聯圖</div>
+        <div style="height:110px;background:var(--pn);border:1px solid var(--ln);border-radius:8px">
+          <svg width="100%" height="100%" viewBox="0 0 234 108"><line x1="112" y1="54" x2="62" y2="30" stroke="var(--ln)" stroke-width="1"></line><line x1="112" y1="54" x2="166" y2="38" stroke="var(--ln)" stroke-width="1"></line><line x1="112" y1="54" x2="146" y2="82" stroke="var(--ln)" stroke-width="1"></line><line x1="62" y1="30" x2="42" y2="70" stroke="var(--ln)" stroke-width="1"></line><circle cx="112" cy="54" r="6" fill="var(--ac)"></circle><circle cx="62" cy="30" r="4" fill="var(--mu)"></circle><circle cx="166" cy="38" r="4" fill="var(--mu)"></circle><circle cx="146" cy="82" r="4" fill="var(--a2)"></circle><circle cx="42" cy="70" r="3.5" fill="var(--mu)"></circle></svg>
+        </div>
+      </div>
+      </sc-if>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div onClick="{{toggleDark}}" style="display:flex;align-items:center;gap:6px;border:1px solid var(--ln);border-radius:20px;padding:4px;background:var(--pn);cursor:pointer">
+          <span style="width:24px;height:24px;border-radius:50%;background:{{sunBg}};display:grid;place-items:center;font-size:12px;color:var(--hd)">☀</span>
+          <span style="width:24px;height:24px;border-radius:50%;background:{{moonBg}};display:grid;place-items:center;font-size:12px;color:var(--hd)">☾</span>
+        </div>
+        <span style="font:11px 'IBM Plex Mono',monospace;color:var(--mu)">hsjinde.github.io</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 主內容 ══ -->
+  <div ref="{{mainRef}}" style="overflow-y:auto;min-height:0">
+
+    <!-- 編輯模式 -->
+    <sc-if value="{{onEdit}}" hint-placeholder-val="{{false}}">
+    <div style="height:100%;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid var(--ln);background:var(--pn)">
+        <span style="font:11px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--ac);background:var(--ab);border-radius:12px;padding:3px 10px">編輯中</span>
+        <span style="font:600 16px 'Noto Serif TC',serif;color:var(--hd)">OpenCode MCP 配置指南</span>
+        <span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu)">好工具推薦/opencode-mcp.md</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span onClick="{{cancelEdit}}" style="font-size:13.5px;border:1px solid var(--ln);border-radius:8px;padding:7px 16px;cursor:pointer;background:var(--bg)" style-hover="border-color:var(--a2)">取消</span>
+          <span onClick="{{saveEdit}}" style="font-size:13.5px;font-weight:500;color:#fff;background:var(--ac);border-radius:8px;padding:8px 18px;cursor:pointer" style-hover="background:var(--a2)">儲存</span>
+        </div>
+      </div>
+      <textarea value="{{draft}}" onChange="{{onDraft}}" spellcheck="false" style="flex:1;min-height:0;resize:none;border:none;outline:none;background:var(--bg);color:var(--tx);padding:28px 56px;font:14px/2 'IBM Plex Mono',monospace"></textarea>
+      <div style="display:flex;align-items:center;gap:16px;padding:8px 24px;border-top:1px solid var(--ln);font:11.5px 'IBM Plex Mono',monospace;color:var(--mu)"><span>Markdown</span><span>{{draftChars}} 字元</span><span style="margin-left:auto">⌘S 儲存 · Esc 取消</span></div>
+    </div>
+    </sc-if>
+
+    <!-- 文章頁 -->
+    <sc-if value="{{onRead}}" hint-placeholder-val="{{true}}">
+    <div style="padding:34px 316px 60px 56px;position:relative;max-width:1400px">
+      <div style="position:fixed;right:32px;top:34px;width:224px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(58,50,38,.06)">
+        <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu);margin-bottom:10px">目錄</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="color:var(--ac);font-weight:500">已配置的 MCP Servers</div>
+          <div style="cursor:pointer" style-hover="color:var(--ac)">opencode.json 完整設定</div>
+          <div style="cursor:pointer" style-hover="color:var(--ac)">各 Server 安裝說明</div>
+          <div style="padding-left:14px;color:var(--mu);cursor:pointer" style-hover="color:var(--ac)">NotebookLM</div>
+          <div style="padding-left:14px;color:var(--mu);cursor:pointer" style-hover="color:var(--ac)">open-computer-use</div>
+          <div style="cursor:pointer" style-hover="color:var(--ac)">重新啟動說明</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--mu);display:flex;gap:6px;align-items:center;margin-bottom:14px"><span onClick="{{goHome}}" style="cursor:pointer" style-hover="color:var(--ac)">首頁</span><span>/</span><span>好工具推薦</span></div>
+      <h1 style="font:700 34px/1.3 'Noto Serif TC',serif;color:var(--hd);margin:0 0 14px">OpenCode MCP 配置指南</h1>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--mu)">2026-06-07</span><span style="color:var(--ln)">·</span>
+        <span onClick="{{goTag}}" style="font:12.5px 'IBM Plex Mono',monospace;color:var(--ac);background:var(--ab);border-radius:12px;padding:2px 10px;cursor:pointer">#tool</span>
+        <span onClick="{{goTag}}" style="font:12.5px 'IBM Plex Mono',monospace;color:var(--ac);background:var(--ab);border-radius:12px;padding:2px 10px;cursor:pointer">#mcp</span>
+        <span onClick="{{goTag}}" style="font:12.5px 'IBM Plex Mono',monospace;color:var(--ac);background:var(--ab);border-radius:12px;padding:2px 10px;cursor:pointer">#opencode</span>
+        <span onClick="{{startEdit}}" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px 14px;cursor:pointer;background:var(--pn)" style-hover="border-color:var(--a2);color:var(--ac)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>編輯</span>
+      </div>
+      <sc-if value="{{justSaved}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--a2);background:var(--ab);border-radius:8px;padding:10px 14px;font-size:13.5px;color:var(--ac);margin-bottom:24px">✓ 已儲存變更</div>
+      </sc-if>
+      <div style="border-left:3px solid var(--a2);background:var(--qb);border-radius:0 8px 8px 0;padding:14px 18px;font-size:15px;line-height:1.9;margin-bottom:30px">本筆記記錄 OpenCode 已配置的 MCP servers，設定檔位於 <code style="font:13.5px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 6px;color:var(--hd)">~/.config/opencode/opencode.json</code>。</div>
+      <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:var(--hd);margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--ln)">已配置的 MCP Servers</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14.5px;margin-bottom:34px">
+        <thead><tr style="text-align:left"><th style="padding:9px 12px;border-bottom:2px solid var(--ln);font-weight:500;color:var(--hd)">Server</th><th style="padding:9px 12px;border-bottom:2px solid var(--ln);font-weight:500;color:var(--hd)">用途</th><th style="padding:9px 12px;border-bottom:2px solid var(--ln);font-weight:500;color:var(--hd)">狀態</th></tr></thead>
+        <tbody>
+        <tr><td style="padding:9px 12px;border-bottom:1px solid var(--ls);font-family:'IBM Plex Mono',monospace;font-size:13.5px">obsidian</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls)">讀寫 Obsidian vault</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls);color:var(--ac)">已啟用</td></tr>
+        <tr style="background:var(--rw)"><td style="padding:9px 12px;border-bottom:1px solid var(--ls);font-family:'IBM Plex Mono',monospace;font-size:13.5px">notebooklm</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls)">NotebookLM 筆記本管理</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls);color:var(--ac)">已啟用</td></tr>
+        <tr><td style="padding:9px 12px;border-bottom:1px solid var(--ls);font-family:'IBM Plex Mono',monospace;font-size:13.5px">playwright</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls)">瀏覽器自動化</td><td style="padding:9px 12px;border-bottom:1px solid var(--ls);color:var(--ac)">已啟用</td></tr>
+        <tr style="background:var(--rw)"><td style="padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:13.5px">open-computer-use</td><td style="padding:9px 12px">桌面自動化（點擊、輸入、截圖）</td><td style="padding:9px 12px;color:var(--ac)">已啟用</td></tr>
+        </tbody>
+      </table>
+      <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:var(--hd);margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--ln)">opencode.json 完整 MCP 設定</h2>
+      <div style="background:var(--cb);border:1px solid var(--ln);border-radius:10px;margin-bottom:34px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--ln)"><span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu)">opencode.json</span><span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu);cursor:pointer" style-hover="color:var(--ac)">複製</span></div>
+        <pre style="margin:0;padding:16px 18px;font:13.5px/1.75 'IBM Plex Mono',monospace;overflow-x:auto">{
+  "mcp": {
+    "obsidian": {
+      "type": "local",
+      "command": ["mcpvault.cmd", "D:\\my-note"],
+      "enabled": true
+    },
+    "notebooklm": {
+      "type": "local",
+      "command": ["notebooklm-mcp.exe", "--transport", "stdio"],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true
+    }
+  }
+}</pre>
+      </div>
+      <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:var(--hd);margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--ln)">各 Server 安裝說明</h2>
+      <h3 style="font:600 18px/1.4 'Noto Serif TC',serif;color:var(--hd);margin:0 0 12px">NotebookLM</h3>
+      <ul style="margin:0 0 18px;padding-left:22px;font-size:15.5px;line-height:2.05">
+        <li><strong style="color:var(--hd);font-weight:500">套件</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 6px">notebooklm-mcp-cli</code> v0.7.1</li>
+        <li><strong style="color:var(--hd);font-weight:500">安裝</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 6px">uv tool install notebooklm-mcp-cli</code></li>
+        <li><strong style="color:var(--hd);font-weight:500">重新登入</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 6px">nlm login</code>（需關閉 Chrome 後執行）</li>
+        <li><strong style="color:var(--hd);font-weight:500">文件</strong>：<span onClick="{{goArticle}}" style="color:var(--ac);text-decoration:underline;text-decoration-color:var(--a2);text-underline-offset:3px;cursor:pointer">oc-go-cc 設定指南</span></li>
+      </ul>
+      <div style="border:1px solid var(--ln);border-left:3px solid var(--a2);border-radius:0 8px 8px 0;background:var(--pn);padding:14px 18px;margin-bottom:34px">
+        <div style="font:500 13px 'Noto Sans TC',sans-serif;color:var(--ac);margin-bottom:6px">💡 登入小技巧</div>
+        <div style="font-size:14.5px;line-height:1.9">若 <code style="font:13px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 5px">nlm login</code> 瀏覽器閃退，先執行 <code style="font:13px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 5px">Stop-Process -Name chrome -Force</code> 關閉所有 Chrome 後再試。</div>
+      </div>
+      <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:var(--hd);margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--ln)">重新啟動說明</h2>
+      <p style="margin:0 0 40px;font-size:15.5px;line-height:2.05">OpenCode 配置<strong style="color:var(--hd);font-weight:500">只在啟動時載入一次</strong>，修改設定後需重啟才生效。重啟後右上角會出現對應數量的 MCP 燈號。</p>
+      <div style="border-top:1px solid var(--ln);padding-top:24px">
+        <div style="font:500 12px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu);margin-bottom:14px">反向連結 · 1</div>
+        <div style="width:300px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:16px 18px;cursor:pointer" style-hover="border-color:var(--a2)">
+          <div style="font:600 15px 'Noto Serif TC',serif;color:var(--hd);margin-bottom:6px">oc-go-cc 設定指南</div>
+          <div style="font-size:13px;line-height:1.8;color:var(--mu)">…mcpvault 的完整安裝與 vault 路徑設定，見 <span style="color:var(--ac)">OpenCode MCP 配置指南</span>…</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- 首頁 -->
+    <sc-if value="{{onHome}}" hint-placeholder-val="{{false}}">
+    <div style="padding:64px 120px;max-width:900px">
+      <div style="font:700 40px 'Noto Serif TC',serif;color:var(--hd);margin-bottom:12px">my-note</div>
+      <p style="margin:0 0 26px;font-size:16px;line-height:1.9;max-width:520px">學習筆記與作品集。整理自我的 Obsidian vault——涵蓋 LLM 學習、SRE 工具鏈與工作專案。</p>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:44px;flex-wrap:wrap">
+        <div onClick="{{openSearch}}" style="display:flex;align-items:center;gap:8px;background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:10px 14px;color:var(--mu);font-size:14px;width:340px;cursor:pointer" style-hover="border-color:var(--a2)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>搜尋筆記…<span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;background:var(--ci);border:1px solid var(--ln);border-radius:4px;padding:1px 5px">⌘K</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu)">排序</span>
+          <div style="display:flex;border:1px solid var(--ln);border-radius:8px;background:var(--pn);padding:3px;gap:2px">
+            <span onClick="{{sortRecent}}" style="font-size:12.5px;padding:4px 12px;border-radius:6px;cursor:pointer;background:{{recentBg}};color:{{recentFg}};font-weight:{{recentWt}}">最近編輯</span>
+            <span onClick="{{sortName}}" style="font-size:12.5px;padding:4px 12px;border-radius:6px;cursor:pointer;background:{{nameBg}};color:{{nameFg}};font-weight:{{nameWt}}">名稱</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:36px">
+        <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
+          <div>
+            <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--ln);padding-bottom:8px;margin-bottom:6px"><span style="font:600 20px 'Noto Serif TC',serif;color:var(--hd)">{{sec.name}}</span><span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu)">{{sec.count}}</span></div>
+            <sc-for list="{{sec.items}}" as="it" hint-placeholder-count="2">
+              <div onClick="{{it.onClick}}" style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:1px solid var(--ls);cursor:pointer" style-hover="color:var(--ac)"><span style="font-size:15.5px;color:{{it.color}}">{{it.title}}</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:var(--mu)">{{it.meta}}</span></div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- 標籤頁 -->
+    <sc-if value="{{onTag}}" hint-placeholder-val="{{false}}">
+    <div style="padding:52px 80px;max-width:760px">
+      <div style="font-size:13px;color:var(--mu);margin-bottom:14px"><span onClick="{{goHome}}" style="cursor:pointer" style-hover="color:var(--ac)">首頁</span> / 標籤</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><span style="font:700 32px 'Noto Serif TC',serif;color:var(--hd)">標籤：<span style="color:var(--ac)">#mcp</span></span><span style="font:13px 'IBM Plex Mono',monospace;color:var(--mu)">2 篇</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:34px;flex-wrap:wrap">
+        <span style="font:12.5px 'IBM Plex Mono',monospace;color:var(--ac);background:var(--ab);border-radius:12px;padding:3px 12px">#mcp</span>
+        <span style="font:12.5px 'IBM Plex Mono',monospace;border:1px solid var(--ln);border-radius:12px;padding:3px 12px;cursor:pointer" style-hover="color:var(--ac)">#tool</span>
+        <span style="font:12.5px 'IBM Plex Mono',monospace;border:1px solid var(--ln);border-radius:12px;padding:3px 12px;cursor:pointer" style-hover="color:var(--ac)">#opencode</span>
+        <span style="font:12.5px 'IBM Plex Mono',monospace;border:1px solid var(--ln);border-radius:12px;padding:3px 12px;cursor:pointer" style-hover="color:var(--ac)">#obsidian</span>
+        <span style="font:12.5px 'IBM Plex Mono',monospace;border:1px solid var(--ln);border-radius:12px;padding:3px 12px;cursor:pointer" style-hover="color:var(--ac)">#LLM</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div onClick="{{goArticle}}" style="background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:18px 22px;cursor:pointer" style-hover="border-color:var(--a2)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 17px 'Noto Serif TC',serif;color:var(--hd)">OpenCode MCP 配置指南</span><span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu)">2026-06-07</span></div>
+          <div style="font-size:13.5px;line-height:1.9;margin-top:6px">記錄 OpenCode 已配置的 MCP servers：obsidian、notebooklm、playwright、open-computer-use…</div>
+        </div>
+        <div style="background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:18px 22px;cursor:pointer" style-hover="border-color:var(--a2)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 17px 'Noto Serif TC',serif;color:var(--hd)">oc-go-cc 設定指南</span><span style="font:12px 'IBM Plex Mono',monospace;color:var(--mu)">2026-06-01</span></div>
+          <div style="font-size:13.5px;line-height:1.9;margin-top:6px">OpenCode / Claude Code 的 Go 工具鏈整合設定與 mcpvault 安裝流程…</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- 資料庫查詢頁 -->
+    <sc-if value="{{onDb}}" hint-placeholder-val="{{false}}">
+    <div style="padding:52px 80px;max-width:900px">
+      <div style="font-size:13px;color:var(--mu);margin-bottom:14px"><span onClick="{{goHome}}" style="cursor:pointer" style-hover="color:var(--ac)">首頁</span> / 資料庫</div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><span style="font:700 32px 'Noto Serif TC',serif;color:var(--hd)">問資料庫</span><span style="font:13px 'IBM Plex Mono',monospace;color:var(--mu)">{{dbCount}} 篇筆記</span></div>
+      <p style="margin:0 0 24px;font-size:14.5px;line-height:1.9;color:var(--mu)">輸入問題，Agent 會根據筆記資料庫的內容回覆。</p>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:6px 6px 6px 16px;margin-bottom:28px" style-focus="border-color:var(--a2)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"></path><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8Z"></path></svg>
+        <input value="{{question}}" onChange="{{onQuestion}}" onKeyDown="{{onAskKey}}" placeholder="例如：notebooklm 要怎麼重新登入？" style="flex:1;border:none;outline:none;background:transparent;font:15px 'Noto Sans TC',sans-serif;color:var(--hd)">
+        <span onClick="{{ask}}" style="font-size:13.5px;font-weight:500;color:#fff;background:var(--ac);border-radius:8px;padding:9px 20px;cursor:pointer;white-space:nowrap" style-hover="background:var(--a2)">送出</span>
+      </div>
+      <sc-if value="{{chatEmpty}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:var(--mu)">試試這些問題</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{samples}}" as="s" hint-placeholder-count="3">
+            <span onClick="{{s.onClick}}" style="font-size:13.5px;border:1px solid var(--ln);background:var(--pn);border-radius:18px;padding:7px 16px;cursor:pointer" style-hover="border-color:var(--a2);color:var(--ac)">{{s.text}}</span>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <sc-for list="{{chat}}" as="m" hint-placeholder-count="0">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="align-self:flex-end;max-width:75%;background:var(--ab);color:var(--hd);border-radius:12px 12px 2px 12px;padding:10px 16px;font-size:14.5px;line-height:1.8">{{m.q}}</div>
+            <div style="background:var(--pn);border:1px solid var(--ln);border-radius:2px 12px 12px 12px;padding:14px 18px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font:500 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--ac)">AGENT</span><span style="font:11px 'IBM Plex Mono',monospace;color:var(--mu)">{{m.status}}</span></div>
+              <sc-if value="{{m.pending}}" hint-placeholder-val="{{false}}"><div style="font-size:14px;color:var(--mu)">思考中…</div></sc-if>
+              <sc-if value="{{m.done}}" hint-placeholder-val="{{false}}"><div style="font-size:14.5px;line-height:2;white-space:pre-wrap">{{m.a}}</div></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+
+  <!-- ══ 搜尋 overlay ══ -->
+  <sc-if value="{{searchOpen}}" hint-placeholder-val="{{false}}">
+  <div onClick="{{closeSearch}}" style="position:absolute;inset:0;background:rgba(58,50,38,.28);z-index:50">
+    <div onClick="{{stop}}" style="position:absolute;left:50%;top:56px;transform:translateX(-50%);width:720px;max-width:90%;background:var(--bg);border:1px solid var(--ln);border-radius:14px;box-shadow:0 24px 60px rgba(26,20,12,.35);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--ln)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input ref="{{searchRef}}" value="{{query}}" onChange="{{onQuery}}" placeholder="搜尋筆記…" style="flex:1;border:none;outline:none;background:transparent;font:17px 'Noto Sans TC',sans-serif;color:var(--hd)">
+        <span onClick="{{closeSearch}}" style="font:11px 'IBM Plex Mono',monospace;color:var(--mu);border:1px solid var(--ln);border-radius:4px;padding:2px 6px;cursor:pointer">ESC</span>
+      </div>
+      <div style="display:grid;grid-template-columns:280px 1fr;min-height:340px">
+        <div style="border-right:1px solid var(--ln);padding:10px;display:flex;flex-direction:column;gap:4px">
+          <div onClick="{{openResult}}" style="padding:10px 12px;border-radius:8px;background:var(--ab);cursor:pointer">
+            <div style="font:600 14px 'Noto Serif TC',serif;color:var(--ac)">OpenCode <mark style="background:var(--hl);color:var(--hd);border-radius:2px;padding:0 1px">MCP</mark> 配置指南</div>
+            <div style="font-size:12px;color:var(--mu);margin-top:3px">好工具推薦</div>
+          </div>
+          <div onClick="{{openResult}}" style="padding:10px 12px;border-radius:8px;cursor:pointer" style-hover="background:var(--ls)">
+            <div style="font:600 14px 'Noto Serif TC',serif;color:var(--hd)">oc-go-cc 設定指南</div>
+            <div style="font-size:12px;color:var(--mu);margin-top:3px">好工具推薦</div>
+          </div>
+          <div onClick="{{openResult}}" style="padding:10px 12px;border-radius:8px;cursor:pointer" style-hover="background:var(--ls)">
+            <div style="font:600 14px 'Noto Serif TC',serif;color:var(--hd)">搭建屬於自己的 LLM Wiki</div>
+            <div style="font-size:12px;color:var(--mu);margin-top:3px">個人學習</div>
+          </div>
+        </div>
+        <div style="padding:18px 22px">
+          <div style="font:600 16px 'Noto Serif TC',serif;color:var(--hd);margin-bottom:10px">OpenCode MCP 配置指南</div>
+          <div style="font-size:13.5px;line-height:2">本筆記記錄 OpenCode 已配置的 <mark style="background:var(--hl);color:var(--hd);border-radius:2px;padding:0 1px">MCP</mark> servers，設定檔位於 <code style="font:12px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 5px">opencode.json</code>。已啟用：obsidian、notebooklm、playwright、open-computer-use…</div>
+          <div style="margin-top:14px;font-size:12px;color:var(--mu)">↑↓ 選擇 · Enter 開啟</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;主題&quot;},&quot;showGraph&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;側欄&quot;}}">
+class Component extends DCLogic {
+  state = { page: 'article', dark: null, searchOpen: false, query: 'mcp 設定', editing: false, justSaved: false,
+    savedMd: '# OpenCode MCP 配置指南\n\n> 本筆記記錄 OpenCode 已配置的 MCP servers，設定檔位於 `~/.config/opencode/opencode.json`。\n\n## 已配置的 MCP Servers\n\n| Server | 用途 | 狀態 |\n| --- | --- | --- |\n| obsidian | 讀寫 Obsidian vault | 已啟用 |\n| notebooklm | NotebookLM 筆記本管理 | 已啟用 |\n| playwright | 瀏覽器自動化 | 已啟用 |\n| open-computer-use | 桌面自動化（點擊、輸入、截圖） | 已啟用 |\n\n## 各 Server 安裝說明\n\n### NotebookLM\n\n- **套件**：`notebooklm-mcp-cli` v0.7.1\n- **安裝**：`uv tool install notebooklm-mcp-cli`\n- **重新登入**：`nlm login`（需關閉 Chrome 後執行）\n- **文件**：[[oc-go-cc 設定指南]]\n\n## 重新啟動說明\n\nOpenCode 配置**只在啟動時載入一次**，修改設定後需重啟才生效。',
+    draft: '', question: '', chat: [], asking: false };
+
+  notes = [
+    { title: 'OpenCode MCP 配置指南', folder: '好工具推薦', tags: ['tool','mcp','opencode'], date: '2026-06-07' },
+    { title: 'oc-go-cc 設定指南', folder: '好工具推薦', tags: ['tool','mcp'], date: '2026-06-01' },
+    { title: '搭建屬於自己的 LLM Wiki', folder: '個人學習', tags: ['LLM','obsidian'], date: '2026-05-24' },
+    { title: 'Prompt 工程筆記', folder: '個人學習', tags: ['LLM'], date: '2026-05-18' },
+    { title: 'Grafana 告警整理', folder: '工作專案', tags: ['SRE'], date: '2026-05-10' },
+    { title: 'K8s 排錯手冊', folder: '工作專案', tags: ['SRE','tool'], date: '2026-04-28' },
+  ];
+  mainRef = React.createRef();
+  searchRef = React.createRef();
+
+  componentDidMount() {
+    this.onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        this.setState({ searchOpen: true }, () => this.focusSearch());
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's' && this.state.editing) {
+        e.preventDefault();
+        this.saveEdit();
+      } else if (e.key === 'Escape') {
+        if (this.state.editing && !this.state.searchOpen) this.setState({ editing: false });
+        else this.setState({ searchOpen: false });
+      }
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); }
+
+  focusSearch() {
+    setTimeout(() => { if (this.searchRef.current) this.searchRef.current.focus(); }, 30);
+  }
+  async ask(text) {
+    const q = (text ?? this.state.question).trim();
+    if (!q || this.state.asking) return;
+    const id = Date.now();
+    this.setState({ question: '', asking: true, chat: [...this.state.chat, { id, q, a: '', pending: true, done: false, status: '檢索資料庫中…' }] });
+    const dbContext = this.notes.map(n => `- ${n.title}（資料夾：${n.folder}，標籤：${n.tags.join('、')}，更新：${n.date}）`).join('\n');
+    let answer;
+    try {
+      answer = await window.claude.complete({
+        system: '你是個人筆記資料庫的問答助手。僅根據以下資料庫內容回答，使用繁體中文，回答簡潔。以純文字回答，不要使用 Markdown 語法（不要 ** 、# 、反引號等），條列時用「・」開頭即可。若資料庫沒有相關內容，請直接說明找不到。\n\n【筆記清單】\n' + dbContext + '\n\n【筆記全文：OpenCode MCP 配置指南】\n' + this.state.savedMd,
+        messages: [{ role: 'user', content: q }],
+      });
+    } catch (e) {
+      answer = '查詢失敗，請再試一次。';
+    }
+    answer = answer.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/^#+\s*/gm, '');
+    this.setState({
+      asking: false,
+      chat: this.state.chat.map(m => m.id === id ? { ...m, a: answer, pending: false, done: true, status: '已根據資料庫回覆' } : m),
+    });
+  }
+  dbVals(page) {
+    return {
+      onDb: page === 'db',
+      dbNavBg: page === 'db' ? 'var(--ab)' : 'transparent',
+      dbNavFg: page === 'db' ? 'var(--ac)' : 'inherit',
+      dbNavWt: page === 'db' ? 500 : 400,
+      dbCount: this.notes.length,
+      question: this.state.question,
+      chat: this.state.chat,
+      chatEmpty: this.state.chat.length === 0,
+      samples: [
+        'notebooklm 要怎麼重新登入？',
+        '目前啟用了哪些 MCP server？',
+        '改了 opencode.json 之後要做什麼？',
+      ].map(text => ({ text, onClick: () => this.ask(text) })),
+      onQuestion: (e) => this.setState({ question: e.target.value }),
+      onAskKey: (e) => { if (e.key === 'Enter') this.ask(); },
+      ask: () => this.ask(),
+      goDb: () => this.go('db'),
+    };
+  }
+  saveEdit() {
+    this.setState({ savedMd: this.state.draft, editing: false, justSaved: true });
+    clearTimeout(this._savedT);
+    this._savedT = setTimeout(() => this.setState({ justSaved: false }), 2500);
+  }
+  go(page) {
+    this.setState({ page, searchOpen: false, editing: false }, () => {
+      if (this.mainRef.current) this.mainRef.current.scrollTop = 0;
+    });
+  }
+  renderVals() {
+    const dark = this.state.dark ?? (this.props.startDark ?? false);
+    const page = this.state.page;
+    return {
+      dark,
+      showGraph: this.props.showGraph ?? true,
+      onArticle: page === 'article',
+      notOnArticle: page !== 'article',
+      onRead: page === 'article' && !this.state.editing,
+      onEdit: page === 'article' && this.state.editing,
+      draft: this.state.draft,
+      draftChars: this.state.draft.length,
+      justSaved: this.state.justSaved,
+      startEdit: () => this.setState({ editing: true, justSaved: false, draft: this.state.savedMd }),
+      cancelEdit: () => this.setState({ editing: false }),
+      saveEdit: () => this.saveEdit(),
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      ...this.dbVals(page),
+      onHome: page === 'home',
+      onTag: page === 'tag',
+      searchOpen: this.state.searchOpen,
+      query: this.state.query,
+      sunBg: dark ? 'transparent' : '#f6d36b88',
+      moonBg: dark ? 'rgba(236,149,102,.22)' : 'transparent',
+      mainRef: this.mainRef,
+      searchRef: this.searchRef,
+      goHome: () => this.go('home'),
+      goArticle: () => this.go('article'),
+      goTag: () => this.go('tag'),
+      toggleDark: () => this.setState({ dark: !dark }),
+      openSearch: () => this.setState({ searchOpen: true }, () => this.focusSearch()),
+      closeSearch: () => this.setState({ searchOpen: false }),
+      openResult: () => this.go('article'),
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      stop: (e) => e.stopPropagation(),
+    };
+  }
+}
+</script>
+</body>
+</html>

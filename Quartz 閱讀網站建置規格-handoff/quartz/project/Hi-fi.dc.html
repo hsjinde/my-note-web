@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#eceae4;font-family:'Noto Sans TC',system-ui,sans-serif}a{color:#c26b3e}a:hover{color:#a8623a}.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 12px 'IBM Plex Mono',monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 15px/1.2 'Noto Sans TC',sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 11px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 13px/1.3 'Noto Sans TC',sans-serif;color:rgba(0,0,0,.6)}.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:13px/1.5 'Noto Sans TC',sans-serif;color:rgba(0,0,0,.55)}</style></helmet>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">高擬真 — 依 <a class="dv-oid" href="#1b">1b</a>＋<a class="dv-oid" href="#1d">1d</a>＋<a class="dv-oid" href="#1f">1f</a>。暖紙色系 · Noto Serif TC 標題 / Noto Sans TC 內文 / IBM Plex Mono 程式碼</span></div>
+<div class="dv-opts">
+
+<!-- ══ 2a 文章閱讀頁（1b 版面，亮色） ══ -->
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>文章閱讀頁（亮色，桌面）— 左欄合一＋浮動目錄＋文末反向連結</div>
+<div class="dv-card" style="width:1160px;background:#fbf7ef">
+<div style="display:grid;grid-template-columns:264px 1fr;min-height:900px">
+  <!-- sidebar -->
+  <div style="border-right:1px solid #e4d9c6;padding:28px 22px 22px;display:flex;flex-direction:column;gap:18px">
+    <div style="font:700 22px 'Noto Serif TC',serif;color:#3a3226">my-note</div>
+    <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e4d9c6;border-radius:8px;padding:8px 12px;color:#c2b39a;font-size:13.5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c2b39a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>搜尋<span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;background:#f1ead9;border:1px solid #e4d9c6;border-radius:4px;padding:1px 5px;color:#c2b39a">⌘K</span></div>
+    <div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px;color:#5a4f3e">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#c2b39a;margin-bottom:6px">總覽</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px"><span style="color:#c2b39a;font-size:10px">▸</span>個人學習</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px"><span style="color:#c2b39a;font-size:10px">▾</span><span style="font-weight:500">好工具推薦</span></div>
+      <div style="display:flex;flex-direction:column;gap:1px;margin-left:13px;border-left:1px solid #e4d9c6;padding-left:10px">
+        <div style="padding:5px 8px;border-radius:6px;background:rgba(194,107,62,0.10);color:#c26b3e;font-weight:500">OpenCode MCP 配置指南</div>
+        <div style="padding:5px 8px;border-radius:6px">oc-go-cc 設定指南</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px"><span style="color:#c2b39a;font-size:10px">▸</span>工作專案</div>
+    </div>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#c2b39a;margin-bottom:8px">關聯圖</div>
+        <div style="height:110px;background:#fff;border:1px solid #e4d9c6;border-radius:8px;position:relative">
+          <svg width="100%" height="100%" viewBox="0 0 218 108"><line x1="108" y1="54" x2="60" y2="30" stroke="#e4d9c6" stroke-width="1"></line><line x1="108" y1="54" x2="160" y2="38" stroke="#e4d9c6" stroke-width="1"></line><line x1="108" y1="54" x2="140" y2="82" stroke="#e4d9c6" stroke-width="1"></line><line x1="60" y1="30" x2="40" y2="70" stroke="#e4d9c6" stroke-width="1"></line><circle cx="108" cy="54" r="6" fill="#c26b3e"></circle><circle cx="60" cy="30" r="4" fill="#c2b39a"></circle><circle cx="160" cy="38" r="4" fill="#c2b39a"></circle><circle cx="140" cy="82" r="4" fill="#d9a06b"></circle><circle cx="40" cy="70" r="3.5" fill="#c2b39a"></circle></svg>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:6px;border:1px solid #e4d9c6;border-radius:20px;padding:4px;background:#fff"><span style="width:24px;height:24px;border-radius:50%;background:#f6d36b88;display:grid;place-items:center;font-size:12px">☀</span><span style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#c2b39a">☾</span></div>
+        <span style="font:11px 'IBM Plex Mono',monospace;color:#c2b39a">hsjinde.github.io</span>
+      </div>
+    </div>
+  </div>
+  <!-- article -->
+  <div style="padding:34px 300px 44px 56px;position:relative">
+    <!-- floating TOC -->
+    <div style="position:absolute;right:32px;top:34px;width:224px;background:#fff;border:1px solid #e4d9c6;border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(58,50,38,.06)">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#c2b39a;margin-bottom:10px">目錄</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:#5a4f3e">
+        <div style="color:#c26b3e;font-weight:500;border-left:2px solid #c26b3e;padding-left:10px;margin-left:-18px;padding-left:16px">已配置的 MCP Servers</div>
+        <div>opencode.json 完整設定</div>
+        <div>各 Server 安裝說明</div>
+        <div style="padding-left:14px;color:#c2b39a">Obsidian（mcpvault）</div>
+        <div style="padding-left:14px;color:#c2b39a">NotebookLM</div>
+        <div style="padding-left:14px;color:#c2b39a">open-computer-use</div>
+        <div>重新啟動說明</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#c2b39a;display:flex;gap:6px;align-items:center;margin-bottom:14px"><a href="#2b" style="color:#c2b39a;text-decoration:none">首頁</a><span>/</span><span>好工具推薦</span></div>
+    <h1 style="font:700 34px/1.3 'Noto Serif TC',serif;color:#3a3226;margin:0 0 14px">OpenCode MCP 配置指南</h1>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#c2b39a">2026-06-07</span><span style="color:#e4d9c6">·</span>
+      <span style="font:12.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:12px;padding:2px 10px">#tool</span>
+      <span style="font:12.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:12px;padding:2px 10px">#mcp</span>
+      <span style="font:12.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:12px;padding:2px 10px">#opencode</span>
+    </div>
+    <div style="border-left:3px solid #d9a06b;background:rgba(194,107,62,0.06);border-radius:0 8px 8px 0;padding:14px 18px;font-size:15px;line-height:1.9;color:#5a4f3e;margin-bottom:30px">本筆記記錄 OpenCode 已配置的 MCP servers，設定檔位於 <code style="font:13.5px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 6px;color:#3a3226">~/.config/opencode/opencode.json</code>。</div>
+    <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e4d9c6">已配置的 MCP Servers</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14.5px;color:#5a4f3e;margin-bottom:34px">
+      <thead><tr style="text-align:left"><th style="padding:9px 12px;border-bottom:2px solid #e4d9c6;font-weight:500;color:#3a3226">Server</th><th style="padding:9px 12px;border-bottom:2px solid #e4d9c6;font-weight:500;color:#3a3226">用途</th><th style="padding:9px 12px;border-bottom:2px solid #e4d9c6;font-weight:500;color:#3a3226">狀態</th></tr></thead>
+      <tbody>
+      <tr><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;font-family:'IBM Plex Mono',monospace;font-size:13.5px">obsidian</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4">讀寫 Obsidian vault</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;color:#c26b3e">已啟用</td></tr>
+      <tr style="background:rgba(228,217,198,.25)"><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;font-family:'IBM Plex Mono',monospace;font-size:13.5px">notebooklm</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4">NotebookLM 筆記本管理</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;color:#c26b3e">已啟用</td></tr>
+      <tr><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;font-family:'IBM Plex Mono',monospace;font-size:13.5px">playwright</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4">瀏覽器自動化</td><td style="padding:9px 12px;border-bottom:1px solid #efe7d4;color:#c26b3e">已啟用</td></tr>
+      <tr style="background:rgba(228,217,198,.25)"><td style="padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:13.5px">open-computer-use</td><td style="padding:9px 12px">桌面自動化（點擊、輸入、截圖）</td><td style="padding:9px 12px;color:#c26b3e">已啟用</td></tr>
+      </tbody>
+    </table>
+    <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e4d9c6">opencode.json 完整 MCP 設定</h2>
+    <div style="background:#f4eee1;border:1px solid #e4d9c6;border-radius:10px;margin-bottom:34px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #e4d9c6"><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">opencode.json</span><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">複製</span></div>
+      <pre style="margin:0;padding:16px 18px;font:13.5px/1.75 'IBM Plex Mono',monospace;color:#5a4f3e;overflow-x:auto">{
+  "mcp": {
+    "obsidian": {
+      "type": "local",
+      "command": ["mcpvault.cmd", "D:\\my-note"],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true
+    }
+  }
+}</pre>
+    </div>
+    <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e4d9c6">各 Server 安裝說明</h2>
+    <h3 style="font:600 18px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 12px">NotebookLM</h3>
+    <ul style="margin:0 0 18px;padding-left:22px;font-size:15.5px;line-height:2.05;color:#5a4f3e">
+      <li><strong style="color:#3a3226;font-weight:500">套件</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 6px">notebooklm-mcp-cli</code> v0.7.1</li>
+      <li><strong style="color:#3a3226;font-weight:500">安裝</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 6px">uv tool install notebooklm-mcp-cli</code></li>
+      <li><strong style="color:#3a3226;font-weight:500">重新登入</strong>：<code style="font:13.5px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 6px">nlm login</code>（需關閉 Chrome 後執行）</li>
+      <li><strong style="color:#3a3226;font-weight:500">文件</strong>：<a href="#2a" style="color:#c26b3e;text-decoration:underline;text-decoration-color:#d9a06b;text-underline-offset:3px">oc-go-cc 設定指南</a></li>
+    </ul>
+    <div style="border:1px solid #e4d9c6;border-left:3px solid #d9a06b;border-radius:0 8px 8px 0;background:#fff;padding:14px 18px;margin-bottom:34px">
+      <div style="font:500 13px 'Noto Sans TC',sans-serif;color:#c26b3e;margin-bottom:6px">💡 登入小技巧</div>
+      <div style="font-size:14.5px;line-height:1.9;color:#5a4f3e">若 <code style="font:13px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 5px">nlm login</code> 瀏覽器閃退，先執行 <code style="font:13px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 5px">Stop-Process -Name chrome -Force</code> 關閉所有 Chrome 後再試。</div>
+    </div>
+    <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e4d9c6">重新啟動說明</h2>
+    <p style="margin:0 0 40px;font-size:15.5px;line-height:2.05;color:#5a4f3e">OpenCode 配置<strong style="color:#3a3226;font-weight:500">只在啟動時載入一次</strong>，修改設定後需重啟才生效。重啟後右上角會出現對應數量的 MCP 燈號。</p>
+    <!-- backlinks -->
+    <div style="border-top:1px solid #e4d9c6;padding-top:24px">
+      <div style="font:500 12px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#c2b39a;margin-bottom:14px">反向連結 · 1</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="width:300px;background:#fff;border:1px solid #e4d9c6;border-radius:10px;padding:16px 18px">
+          <div style="font:600 15px 'Noto Serif TC',serif;color:#3a3226;margin-bottom:6px">oc-go-cc 設定指南</div>
+          <div style="font-size:13px;line-height:1.8;color:#c2b39a">…mcpvault 的完整安裝與 vault 路徑設定，見 <span style="color:#c26b3e">OpenCode MCP 配置指南</span>…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ══ 2b 首頁（1d 列表式） ══ -->
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>首頁（1d 列表式）— 依資料夾分節的索引</div>
+<div class="dv-card" style="width:880px;background:#fbf7ef">
+<div style="min-height:760px;padding:64px 120px">
+  <div style="font:700 40px 'Noto Serif TC',serif;color:#3a3226;margin-bottom:12px">my-note</div>
+  <p style="margin:0 0 26px;font-size:16px;line-height:1.9;color:#5a4f3e;max-width:520px">學習筆記與作品集。整理自我的 Obsidian vault——涵蓋 LLM 學習、SRE 工具鏈與工作專案。</p>
+  <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e4d9c6;border-radius:8px;padding:10px 14px;color:#c2b39a;font-size:14px;width:340px;margin-bottom:44px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2b39a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>搜尋筆記…<span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;background:#f1ead9;border:1px solid #e4d9c6;border-radius:4px;padding:1px 5px">⌘K</span></div>
+  <div style="display:flex;flex-direction:column;gap:36px">
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid #e4d9c6;padding-bottom:8px;margin-bottom:6px"><span style="font:600 20px 'Noto Serif TC',serif;color:#3a3226">個人學習</span><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">12 篇</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:1px solid #f1ead9"><a href="#2a" style="font-size:15.5px;color:#5a4f3e;text-decoration:none">Karpathy LLM 入門 — 從心智模型理解 LLM</a><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-22</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:1px solid #f1ead9"><span style="font-size:15.5px;color:#5a4f3e">搭建屬於自己的 LLM Wiki — Karpathy 模式實作指南</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-15</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px"><span style="font-size:15.5px;color:#5a4f3e">資料結構 — 鐵人挑戰 35D</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">系列 · 35 篇</span></div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid #e4d9c6;padding-bottom:8px;margin-bottom:6px"><span style="font:600 20px 'Noto Serif TC',serif;color:#3a3226">好工具推薦</span><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">2 篇</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:1px solid #f1ead9"><a href="#2a" style="font-size:15.5px;color:#c26b3e;text-decoration:none">OpenCode MCP 配置指南</a><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-07</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px"><span style="font-size:15.5px;color:#5a4f3e">oc-go-cc 設定指南</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-01</span></div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid #e4d9c6;padding-bottom:8px;margin-bottom:6px"><span style="font:600 20px 'Noto Serif TC',serif;color:#3a3226">工作專案</span><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">5 篇</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-bottom:1px solid #f1ead9"><span style="font-size:15.5px;color:#5a4f3e">Postfix-Manager 郵件伺服器管理系統</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-05-30</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px"><span style="font-size:15.5px;color:#5a4f3e">CORE-PULSE AI 吉祥物對話系統</span><span style="font:12.5px 'IBM Plex Mono',monospace;color:#c2b39a">2026-05-18</span></div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ══ 2c 搜尋開啟 ══ -->
+<div class="dv-opt" id="2c"><div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>搜尋開啟狀態 — 中文全文搜尋＋右側預覽</div>
+<div class="dv-card" style="width:880px;background:#fbf7ef">
+<div style="min-height:620px;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;padding:40px 60px;filter:blur(2px);opacity:.45">
+    <div style="font:700 30px 'Noto Serif TC',serif;color:#3a3226;margin-bottom:16px">OpenCode MCP 配置指南</div>
+    <div style="height:10px;background:#e4d9c6;border-radius:3px;width:80%;margin-bottom:10px"></div>
+    <div style="height:10px;background:#e4d9c6;border-radius:3px;width:70%;margin-bottom:10px"></div>
+    <div style="height:10px;background:#e4d9c6;border-radius:3px;width:76%"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:rgba(58,50,38,.28)"></div>
+  <div style="position:absolute;left:50%;top:56px;transform:translateX(-50%);width:720px;background:#fbf7ef;border:1px solid #e4d9c6;border-radius:14px;box-shadow:0 24px 60px rgba(58,50,38,.30);overflow:hidden">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #e4d9c6">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c26b3e" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+      <span style="font-size:17px;color:#3a3226">mcp 設定<span style="border-left:1.5px solid #c26b3e;margin-left:1px;animation:none">&#8203;</span></span>
+      <span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;color:#c2b39a;border:1px solid #e4d9c6;border-radius:4px;padding:2px 6px">ESC</span>
+    </div>
+    <div style="display:grid;grid-template-columns:280px 1fr;min-height:360px">
+      <div style="border-right:1px solid #e4d9c6;padding:10px;display:flex;flex-direction:column;gap:4px">
+        <div style="padding:10px 12px;border-radius:8px;background:rgba(194,107,62,0.10)">
+          <div style="font:600 14px 'Noto Serif TC',serif;color:#c26b3e">OpenCode <mark style="background:#f6d36b88;color:#3a3226;border-radius:2px;padding:0 1px">MCP</mark> 配置指南</div>
+          <div style="font-size:12px;color:#c2b39a;margin-top:3px">好工具推薦</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:8px">
+          <div style="font:600 14px 'Noto Serif TC',serif;color:#3a3226">oc-go-cc 設定指南</div>
+          <div style="font-size:12px;color:#c2b39a;margin-top:3px">好工具推薦</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:8px">
+          <div style="font:600 14px 'Noto Serif TC',serif;color:#3a3226">搭建屬於自己的 LLM Wiki</div>
+          <div style="font-size:12px;color:#c2b39a;margin-top:3px">個人學習</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px">
+        <div style="font:600 16px 'Noto Serif TC',serif;color:#3a3226;margin-bottom:10px">OpenCode MCP 配置指南</div>
+        <div style="font-size:13.5px;line-height:2;color:#5a4f3e">本筆記記錄 OpenCode 已配置的 <mark style="background:#f6d36b88;color:#3a3226;border-radius:2px;padding:0 1px">MCP</mark> servers，<mark style="background:#f6d36b88;color:#3a3226;border-radius:2px;padding:0 1px">設定</mark>檔位於 <code style="font:12px 'IBM Plex Mono',monospace;background:#efe7d4;border-radius:4px;padding:1px 5px">opencode.json</code>。已啟用：obsidian、notebooklm、playwright、open-computer-use…</div>
+        <div style="margin-top:14px;font-size:12px;color:#c2b39a">↑↓ 選擇 · Enter 開啟</div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ══ 2d 標籤頁 ══ -->
+<div class="dv-opt" id="2d"><div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>標籤頁 — #mcp</div>
+<div class="dv-card" style="width:680px;background:#fbf7ef">
+<div style="min-height:460px;padding:52px 80px">
+  <div style="font-size:13px;color:#c2b39a;margin-bottom:14px">首頁 / 標籤</div>
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><span style="font:700 32px 'Noto Serif TC',serif;color:#3a3226">標籤：<span style="color:#c26b3e">#mcp</span></span><span style="font:13px 'IBM Plex Mono',monospace;color:#c2b39a">2 篇</span></div>
+  <div style="display:flex;gap:8px;margin-bottom:34px;flex-wrap:wrap">
+    <span style="font:12.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:12px;padding:3px 12px">#mcp</span>
+    <span style="font:12.5px 'IBM Plex Mono',monospace;color:#5a4f3e;border:1px solid #e4d9c6;border-radius:12px;padding:3px 12px">#tool</span>
+    <span style="font:12.5px 'IBM Plex Mono',monospace;color:#5a4f3e;border:1px solid #e4d9c6;border-radius:12px;padding:3px 12px">#opencode</span>
+    <span style="font:12.5px 'IBM Plex Mono',monospace;color:#5a4f3e;border:1px solid #e4d9c6;border-radius:12px;padding:3px 12px">#obsidian</span>
+    <span style="font:12.5px 'IBM Plex Mono',monospace;color:#5a4f3e;border:1px solid #e4d9c6;border-radius:12px;padding:3px 12px">#LLM</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="background:#fff;border:1px solid #e4d9c6;border-radius:10px;padding:18px 22px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><a href="#2a" style="font:600 17px 'Noto Serif TC',serif;color:#3a3226;text-decoration:none">OpenCode MCP 配置指南</a><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-07</span></div>
+      <div style="font-size:13.5px;line-height:1.9;color:#5a4f3e;margin-top:6px">記錄 OpenCode 已配置的 MCP servers：obsidian、notebooklm、playwright、open-computer-use…</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e4d9c6;border-radius:10px;padding:18px 22px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 17px 'Noto Serif TC',serif;color:#3a3226">oc-go-cc 設定指南</span><span style="font:12px 'IBM Plex Mono',monospace;color:#c2b39a">2026-06-01</span></div>
+      <div style="font-size:13.5px;line-height:1.9;color:#5a4f3e;margin-top:6px">OpenCode / Claude Code 的 Go 工具鏈整合設定與 mcpvault 安裝流程…</div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ══ 2e 深色模式 ══ -->
+<div class="dv-opt" id="2e"><div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>深色模式 — 同一文章頁，spec darkMode 色票</div>
+<div class="dv-card" style="width:1160px;background:#26221c;border-color:rgba(0,0,0,.4)">
+<div style="display:grid;grid-template-columns:264px 1fr;min-height:640px">
+  <div style="border-right:1px solid #3a342a;padding:28px 22px 22px;display:flex;flex-direction:column;gap:18px">
+    <div style="font:700 22px 'Noto Serif TC',serif;color:#ece4d6">my-note</div>
+    <div style="display:flex;align-items:center;gap:8px;background:#2e2922;border:1px solid #3a342a;border-radius:8px;padding:8px 12px;color:#5f5647;font-size:13.5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f5647" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>搜尋<span style="margin-left:auto;font:11px 'IBM Plex Mono',monospace;border:1px solid #3a342a;border-radius:4px;padding:1px 5px">⌘K</span></div>
+    <div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px;color:#d8cdbb">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#5f5647;margin-bottom:6px">總覽</div>
+      <div style="padding:5px 8px"><span style="color:#5f5647;font-size:10px">▸ </span>個人學習</div>
+      <div style="padding:5px 8px"><span style="color:#5f5647;font-size:10px">▾ </span><span style="font-weight:500">好工具推薦</span></div>
+      <div style="display:flex;flex-direction:column;gap:1px;margin-left:13px;border-left:1px solid #3a342a;padding-left:10px">
+        <div style="padding:5px 8px;border-radius:6px;background:rgba(224,138,90,0.14);color:#e08a5a;font-weight:500">OpenCode MCP 配置指南</div>
+        <div style="padding:5px 8px">oc-go-cc 設定指南</div>
+      </div>
+      <div style="padding:5px 8px"><span style="color:#5f5647;font-size:10px">▸ </span>工作專案</div>
+    </div>
+    <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid #3a342a;border-radius:20px;padding:4px;background:#2e2922"><span style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#5f5647">☀</span><span style="width:24px;height:24px;border-radius:50%;background:#8a660055;display:grid;place-items:center;font-size:12px;color:#ece4d6">☾</span></div>
+      <span style="font:11px 'IBM Plex Mono',monospace;color:#5f5647">hsjinde.github.io</span>
+    </div>
+  </div>
+  <div style="padding:34px 300px 44px 56px;position:relative">
+    <div style="position:absolute;right:32px;top:34px;width:224px;background:#2e2922;border:1px solid #3a342a;border-radius:10px;padding:16px 18px">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#5f5647;margin-bottom:10px">目錄</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:#d8cdbb">
+        <div style="color:#e08a5a;font-weight:500">已配置的 MCP Servers</div>
+        <div>opencode.json 完整設定</div>
+        <div>各 Server 安裝說明</div>
+        <div>重新啟動說明</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#5f5647;margin-bottom:14px">首頁 / 好工具推薦</div>
+    <h1 style="font:700 34px/1.3 'Noto Serif TC',serif;color:#ece4d6;margin:0 0 14px">OpenCode MCP 配置指南</h1>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+      <span style="font-size:13px;color:#5f5647">2026-06-07</span><span style="color:#3a342a">·</span>
+      <span style="font:12.5px 'IBM Plex Mono',monospace;color:#e08a5a;background:rgba(224,138,90,0.14);border-radius:12px;padding:2px 10px">#tool</span>
+      <span style="font:12.5px 'IBM Plex Mono',monospace;color:#e08a5a;background:rgba(224,138,90,0.14);border-radius:12px;padding:2px 10px">#mcp</span>
+    </div>
+    <div style="border-left:3px solid #a8623a;background:rgba(224,138,90,0.08);border-radius:0 8px 8px 0;padding:14px 18px;font-size:15px;line-height:1.9;color:#d8cdbb;margin-bottom:30px">本筆記記錄 OpenCode 已配置的 MCP servers，設定檔位於 <code style="font:13.5px 'IBM Plex Mono',monospace;background:#3a342a;border-radius:4px;padding:1px 6px;color:#ece4d6">~/.config/opencode/opencode.json</code>。</div>
+    <h2 style="font:600 24px/1.4 'Noto Serif TC',serif;color:#ece4d6;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #3a342a">已配置的 MCP Servers</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14.5px;color:#d8cdbb;margin-bottom:34px">
+      <thead><tr style="text-align:left"><th style="padding:9px 12px;border-bottom:2px solid #3a342a;font-weight:500;color:#ece4d6">Server</th><th style="padding:9px 12px;border-bottom:2px solid #3a342a;font-weight:500;color:#ece4d6">用途</th><th style="padding:9px 12px;border-bottom:2px solid #3a342a;font-weight:500;color:#ece4d6">狀態</th></tr></thead>
+      <tbody>
+      <tr><td style="padding:9px 12px;border-bottom:1px solid #322d25;font-family:'IBM Plex Mono',monospace;font-size:13.5px">obsidian</td><td style="padding:9px 12px;border-bottom:1px solid #322d25">讀寫 Obsidian vault</td><td style="padding:9px 12px;border-bottom:1px solid #322d25;color:#e08a5a">已啟用</td></tr>
+      <tr style="background:rgba(58,52,42,.4)"><td style="padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:13.5px">playwright</td><td style="padding:9px 12px">瀏覽器自動化</td><td style="padding:9px 12px;color:#e08a5a">已啟用</td></tr>
+      </tbody>
+    </table>
+    <div style="background:#211d17;border:1px solid #3a342a;border-radius:10px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #3a342a"><span style="font:12px 'IBM Plex Mono',monospace;color:#5f5647">opencode.json</span><span style="font:12px 'IBM Plex Mono',monospace;color:#5f5647">複製</span></div>
+      <pre style="margin:0;padding:16px 18px;font:13.5px/1.75 'IBM Plex Mono',monospace;color:#d8cdbb">{
+  "mcp": {
+    "obsidian": { "type": "local", "enabled": true }
+  }
+}</pre>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ══ 2f 手機版 ══ -->
+<div class="dv-opt" id="2f"><div class="dv-olabel"><a class="dv-oid" href="#2f">2f</a>手機版（1f）— 抽屜導航＋文首摺疊目錄</div>
+<div class="dv-card" style="width:390px;background:#fbf7ef;border-radius:28px">
+<div style="min-height:760px;display:flex;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid #e4d9c6;position:sticky;top:0;background:#fbf7ef">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5a4f3e" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+    <span style="font:700 18px 'Noto Serif TC',serif;color:#3a3226">my-note</span>
+    <div style="margin-left:auto;display:flex;gap:14px;align-items:center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5a4f3e" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+      <span style="font-size:15px;color:#5a4f3e">☾</span>
+    </div>
+  </div>
+  <div style="padding:22px 20px 30px">
+    <div style="font-size:12.5px;color:#c2b39a;margin-bottom:10px">好工具推薦 /</div>
+    <h1 style="font:700 25px/1.4 'Noto Serif TC',serif;color:#3a3226;margin:0 0 10px">OpenCode MCP 配置指南</h1>
+    <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap">
+      <span style="font:11.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:11px;padding:2px 9px">#tool</span>
+      <span style="font:11.5px 'IBM Plex Mono',monospace;color:#c26b3e;background:rgba(194,107,62,0.10);border-radius:11px;padding:2px 9px">#mcp</span>
+    </div>
+    <div style="border:1px solid #e4d9c6;border-radius:10px;background:#fff;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px">
+      <span style="color:#c26b3e;font-size:11px">▸</span><span style="font-weight:500;font-size:14px;color:#3a3226">目錄</span><span style="margin-left:auto;font-size:12px;color:#c2b39a">4 節</span>
+    </div>
+    <div style="border-left:3px solid #d9a06b;background:rgba(194,107,62,0.06);border-radius:0 8px 8px 0;padding:12px 14px;font-size:14px;line-height:1.9;color:#5a4f3e;margin-bottom:22px">本筆記記錄 OpenCode 已配置的 MCP servers。</div>
+    <h2 style="font:600 19px 'Noto Serif TC',serif;color:#3a3226;margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid #e4d9c6">已配置的 MCP Servers</h2>
+    <div style="overflow:hidden;border:1px solid #e4d9c6;border-radius:10px;margin-bottom:8px">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#5a4f3e">
+        <thead><tr style="text-align:left;background:rgba(228,217,198,.35)"><th style="padding:8px 10px;font-weight:500;color:#3a3226">Server</th><th style="padding:8px 10px;font-weight:500;color:#3a3226">用途</th><th style="padding:8px 10px;font-weight:500;color:#3a3226">狀態</th></tr></thead>
+        <tbody>
+        <tr><td style="padding:8px 10px;border-top:1px solid #efe7d4;font-family:'IBM Plex Mono',monospace;font-size:12px">obsidian</td><td style="padding:8px 10px;border-top:1px solid #efe7d4">讀寫 vault</td><td style="padding:8px 10px;border-top:1px solid #efe7d4;color:#c26b3e">已啟用</td></tr>
+        <tr><td style="padding:8px 10px;border-top:1px solid #efe7d4;font-family:'IBM Plex Mono',monospace;font-size:12px">playwright</td><td style="padding:8px 10px;border-top:1px solid #efe7d4">瀏覽器自動化</td><td style="padding:8px 10px;border-top:1px solid #efe7d4;color:#c26b3e">已啟用</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11.5px;color:#c2b39a;margin-bottom:22px">表格可橫向捲動 →</div>
+    <div style="background:#f4eee1;border:1px solid #e4d9c6;border-radius:10px;overflow:hidden;margin-bottom:22px">
+      <div style="padding:7px 14px;border-bottom:1px solid #e4d9c6;font:11.5px 'IBM Plex Mono',monospace;color:#c2b39a">opencode.json</div>
+      <pre style="margin:0;padding:12px 14px;font:12px/1.7 'IBM Plex Mono',monospace;color:#5a4f3e;overflow-x:auto">{
+  "mcp": {
+    "obsidian": {
+      "type": "local",
+      "enabled": true
+    }
+  }
+}</pre>
+    </div>
+    <div style="border-top:1px solid #e4d9c6;padding-top:16px">
+      <div style="font:500 11px 'Noto Sans TC',sans-serif;letter-spacing:.12em;color:#c2b39a;margin-bottom:10px">反向連結 · 1</div>
+      <div style="background:#fff;border:1px solid #e4d9c6;border-radius:10px;padding:13px 16px">
+        <div style="font:600 14px 'Noto Serif TC',serif;color:#3a3226">oc-go-cc 設定指南</div>
+        <div style="font-size:12px;line-height:1.8;color:#c2b39a;margin-top:4px">…完整安裝與 vault 路徑設定…</div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+</div>
+<p class="dv-next">下一步：「<a class="dv-oid" href="#2a">2a</a> 的目錄改成可捲動吸附」 · 「首頁加最近更新區塊」 · 「做成可點擊的互動原型（含亮暗切換）」</p>
+</section>
+</x-dc>
+</body>
+</html>
