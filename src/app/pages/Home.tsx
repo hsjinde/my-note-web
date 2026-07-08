@@ -1,21 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { SiteIndex } from '../../shared/types';
+import { buildFolderTree, type FolderNode } from '../folderTree';
 
 export default function Home({ index }: { index: SiteIndex }) {
   const [sort, setSort] = useState<'recent' | 'name'>('recent');
-  const sections = useMemo(() => {
-    const map = new Map<string, SiteIndex['notes']>();
-    for (const n of index.notes) {
-      if (!map.has(n.folder)) map.set(n.folder, []);
-      map.get(n.folder)!.push(n);
-    }
-    for (const list of map.values()) {
-      list.sort((a, b) => sort === 'recent'
-        ? (b.date ?? '').localeCompare(a.date ?? '')
-        : a.title.localeCompare(b.title, 'zh-Hant'));
-    }
-    return [...map.entries()];
-  }, [index, sort]);
+  const tree = useMemo(() => buildFolderTree(index.notes), [index]);
   const pill = (active: boolean) => ({
     fontSize: 12.5, padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
     background: active ? 'var(--ab)' : 'transparent', color: active ? 'var(--ac)' : 'inherit', fontWeight: active ? 500 : 400,
@@ -34,22 +23,42 @@ export default function Home({ index }: { index: SiteIndex }) {
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-        {sections.map(([folder, notes]) => (
-          <div key={folder}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: '1px solid var(--ln)', paddingBottom: 8, marginBottom: 6 }}>
-              <span style={{ font: "600 20px 'Noto Serif TC',serif", color: 'var(--hd)' }}>{folder}</span>
-              <span style={{ font: "12px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{notes.length}</span>
-            </div>
-            {notes.map((n) => (
-              <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 2px', borderBottom: '1px solid var(--ls)', cursor: 'pointer' }}>
-                <span style={{ fontSize: 15.5 }}>{n.title}</span>
-                <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{n.date ?? ''}</span>
-              </div>
-            ))}
-          </div>
+        {tree.map((node) => (
+          <FolderSection key={node.fullPath} node={node} sort={sort} level={0} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function countNotes(node: FolderNode): number {
+  return node.notes.length + node.children.reduce((sum, c) => sum + countNotes(c), 0);
+}
+
+function sortNotes(notes: SiteIndex['notes'], sort: 'recent' | 'name') {
+  return [...notes].sort((a, b) => sort === 'recent'
+    ? (b.date ?? '').localeCompare(a.date ?? '')
+    : a.title.localeCompare(b.title, 'zh-Hant'));
+}
+
+function FolderSection({ node, sort, level }: { node: FolderNode; sort: 'recent' | 'name'; level: number }) {
+  const titleFont = level === 0 ? "600 20px 'Noto Serif TC',serif" : "600 15px 'Noto Serif TC',serif";
+  return (
+    <div style={{ marginLeft: level === 0 ? 0 : 18 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: '1px solid var(--ln)', paddingBottom: 8, marginBottom: 6, marginTop: level === 0 ? 0 : 18 }}>
+        <span style={{ font: titleFont, color: 'var(--hd)' }}>{node.name}</span>
+        <span style={{ font: "12px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{countNotes(node)}</span>
+      </div>
+      {sortNotes(node.notes, sort).map((n) => (
+        <div key={n.path} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 2px', borderBottom: '1px solid var(--ls)', cursor: 'pointer' }}>
+          <span style={{ fontSize: 15.5 }}>{n.title}</span>
+          <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{n.date ?? ''}</span>
+        </div>
+      ))}
+      {node.children.map((child) => (
+        <FolderSection key={child.fullPath} node={child} sort={sort} level={level + 1} />
+      ))}
     </div>
   );
 }
