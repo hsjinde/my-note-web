@@ -32,9 +32,9 @@ describe('ask', () => {
   it('組 prompt 呼叫 AI 並回答', async () => {
     const kv = mockKV({
       'meta:index': JSON.stringify(idx),
-      'note:好工具推薦/opencode-mcp.md': JSON.stringify({ content: 'nlm login 說明', sha: 's' }),
-      'note:個人學習/llm.md': JSON.stringify({ content: '向量', sha: 's' }),
-      'note:wiki/k.md': JSON.stringify({ content: '人物', sha: 's' }),
+      'shard:好工具推薦': JSON.stringify({ '好工具推薦/opencode-mcp.md': { content: 'nlm login 說明', sha: 's' } }),
+      'shard:個人學習': JSON.stringify({ '個人學習/llm.md': { content: '向量', sha: 's' } }),
+      'shard:wiki': JSON.stringify({ 'wiki/k.md': { content: '人物', sha: 's' } }),
     });
     const run = vi.fn(async (_m: string, input: { messages: { role: string; content: string }[] }) => {
       expect(input.messages[0].role).toBe('system');
