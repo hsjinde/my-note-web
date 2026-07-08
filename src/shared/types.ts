@@ -1,7 +1,7 @@
 export interface NoteMeta {
   path: string; // repo 相對路徑，如 '好工具推薦/opencode-mcp.md'
   title: string; // frontmatter.title 或檔名（去 .md）
-  folder: string; // 第一層資料夾名
+  folder: string; // 完整資料夾路徑（不含檔名），如 '個人學習/LeetCode'
   tags: string[];
   date: string | null; // frontmatter date/updated，'YYYY-MM-DD'
   excerpt: string; // 去 frontmatter/markdown 符號後前 160 字

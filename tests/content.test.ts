@@ -43,4 +43,8 @@ describe('parseNote', () => {
     expect(m.date).toBeNull();
     expect(m.private).toBe(true);
   });
+  it('folder 為完整資料夾路徑（含子資料夾）', () => {
+    const nested = parseNote('個人學習/LeetCode/兩數之和.md', '# 內文');
+    expect(nested.folder).toBe('個人學習/LeetCode');
+  });
 });

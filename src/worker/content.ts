@@ -39,7 +39,7 @@ export function parseNote(path: string, md: string): NoteMeta {
   return {
     path,
     title: typeof fm.title === 'string' && fm.title ? fm.title : filename,
-    folder: path.split('/')[0],
+    folder: path.split('/').slice(0, -1).join('/'),
     tags,
     date: rawDate ? String(rawDate).slice(0, 10) : null,
     excerpt: plain.slice(0, 160),
