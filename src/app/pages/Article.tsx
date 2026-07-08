@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { SiteIndex } from '../../shared/types';
 import { fetchNote, saveNote } from '../api';
 import { renderMarkdown } from '../markdown';
@@ -103,7 +103,10 @@ export default function Article({ path, index, requireLogin, onSaved }: {
         </div>
       )}
       <div style={{ fontSize: 13, color: 'var(--mu)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14 }}>
-        <span onClick={() => (location.hash = '#/')} style={{ cursor: 'pointer' }}>首頁</span><span>/</span><span>{meta?.folder}</span>
+        <span onClick={() => (location.hash = '#/')} style={{ cursor: 'pointer' }}>首頁</span>
+        {(meta?.folder ?? '').split('/').map((seg, i) => (
+          <Fragment key={i}><span>/</span><span>{seg}</span></Fragment>
+        ))}
       </div>
       <h1 style={{ font: "700 34px/1.3 'Noto Serif TC',serif", color: 'var(--hd)', margin: '0 0 14px' }}>{title}</h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28, flexWrap: 'wrap' }}>
