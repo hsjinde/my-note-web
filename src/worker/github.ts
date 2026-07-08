@@ -24,11 +24,19 @@ export class GitHub {
     });
   }
 
-  async listMarkdownPaths(): Promise<string[]> {
+  async listMarkdownEntries(): Promise<{ path: string; sha: string }[]> {
     const res = await this.req(`/git/trees/${this.branch}?recursive=1`);
     if (!res.ok) throw new Error(`getTree failed: ${res.status}`);
-    const data = (await res.json()) as { tree: { path: string; type: string }[] };
-    return data.tree.filter((t) => t.type === 'blob' && t.path.endsWith('.md')).map((t) => t.path);
+    const data = (await res.json()) as { tree: { path: string; type: string; sha: string }[] };
+    return data.tree
+      .filter((t) => t.type === 'blob' && t.path.endsWith('.md'))
+      .map((t) => ({ path: t.path, sha: t.sha }));
+  }
+
+  async getTarballBuffer(): Promise<ArrayBuffer> {
+    const res = await this.req(`/tarball/${this.branch}`);
+    if (!res.ok) throw new Error(`getTarball failed: ${res.status}`);
+    return res.arrayBuffer();
   }
 
   async getFile(path: string): Promise<{ content: string; sha: string } | null> {

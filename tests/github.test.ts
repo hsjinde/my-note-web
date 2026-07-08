@@ -9,16 +9,26 @@ function stubFetch(handler: (url: string, init?: RequestInit) => Response | Prom
 }
 
 describe('GitHub client', () => {
-  it('listMarkdownPaths 過濾出 .md blob', async () => {
+  it('listMarkdownEntries 過濾出 .md blob 並回傳 path+sha', async () => {
     stubFetch((url) => {
       expect(url).toBe('https://api.github.com/repos/hsjinde/my-note/git/trees/main?recursive=1');
       return Response.json({ tree: [
-        { path: '個人學習/a.md', type: 'blob' },
-        { path: '個人學習', type: 'tree' },
-        { path: 'img/x.png', type: 'blob' },
+        { path: '個人學習/a.md', type: 'blob', sha: 'sha-a' },
+        { path: '個人學習', type: 'tree', sha: 'sha-tree' },
+        { path: 'img/x.png', type: 'blob', sha: 'sha-img' },
       ]});
     });
-    expect(await gh().listMarkdownPaths()).toEqual(['個人學習/a.md']);
+    expect(await gh().listMarkdownEntries()).toEqual([{ path: '個人學習/a.md', sha: 'sha-a' }]);
+  });
+
+  it('getTarballBuffer 打 tarball endpoint 並回 ArrayBuffer', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    stubFetch((url) => {
+      expect(url).toBe('https://api.github.com/repos/hsjinde/my-note/tarball/main');
+      return new Response(bytes);
+    });
+    const buf = await gh().getTarballBuffer();
+    expect(new Uint8Array(buf)).toEqual(bytes);
   });
 
   it('getFile 解 base64（UTF-8 中文）並回 sha', async () => {
