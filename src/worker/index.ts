@@ -8,6 +8,7 @@ import { verifyGithubSignature } from './webhook';
 import { fullSync, incrementalSync, rebuildIndexFromKV, shardKey, type PushPayload } from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
+import { QUICKNOTE_PATH, appendQuicknote, formatTaipeiTimestamp, recentQuicknotes } from '../shared/quicknote';
 
 export interface Env {
   NOTES: KVNamespace;
@@ -84,6 +85,27 @@ app.put('/api/note/*', requireAuth, async (c) => {
     await c.env.NOTES.put(key, JSON.stringify(shard));
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ sha: result.sha });
+  } catch (e) {
+    if (e instanceof ShaConflictError) return c.json({ error: 'sha conflict' }, 409);
+    throw e;
+  }
+});
+
+app.post('/api/quicknote', requireAuth, async (c) => {
+  const { text } = await c.req.json<{ text: string }>();
+  const trimmed = text?.trim();
+  if (!trimmed) return c.json({ error: 'empty text' }, 400);
+  try {
+    const gh = github(c.env);
+    const existing = await gh.getFile(QUICKNOTE_PATH);
+    const content = appendQuicknote(existing?.content ?? null, trimmed, formatTaipeiTimestamp(new Date()));
+    const result = await gh.putFile(QUICKNOTE_PATH, content, 'docs: 靈感', existing?.sha);
+    const key = shardKey(QUICKNOTE_PATH);
+    const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
+    shard[QUICKNOTE_PATH] = { content, sha: result.sha };
+    await c.env.NOTES.put(key, JSON.stringify(shard));
+    await rebuildIndexFromKV(c.env.NOTES);
+    return c.json({ recent: recentQuicknotes(content) });
   } catch (e) {
     if (e instanceof ShaConflictError) return c.json({ error: 'sha conflict' }, 409);
     throw e;

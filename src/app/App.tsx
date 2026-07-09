@@ -70,7 +70,8 @@ export default function App() {
   return (
     <div className="app-shell" data-dark={dark ? 'true' : 'false'} style={{ height: '100vh', display: 'grid', gridTemplateColumns: '280px 1fr', background: 'var(--bg)', color: 'var(--tx)', transition: 'background .25s', position: 'relative', overflow: 'hidden' }}>
       <Sidebar index={index} route={route} dark={dark} currentPath={currentPath} open={sidebarOpen}
-        onToggleDark={() => setDark(!dark)} onOpenSearch={() => setSearchOpen(true)} />
+        requireLogin={requireLogin}
+        onToggleDark={() => setDark(!dark)} onOpenSearch={() => setSearchOpen(true)} onQuicknoteSaved={reloadIndex} />
       {sidebarOpen && <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} />}
       <div ref={mainRef} style={{ overflowY: 'auto', minHeight: 0 }}>
         <div className="mobile-topbar">

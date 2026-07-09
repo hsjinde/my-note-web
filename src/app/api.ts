@@ -28,3 +28,8 @@ export const askDb = (question: string) =>
   }).then((r) => json<{ answer: string }>(r)).then((d) => d.answer);
 export const triggerSync = () =>
   fetch('/api/sync', { method: 'POST' }).then((r) => json<{ synced: number }>(r)).then(() => undefined);
+export const postQuicknote = (text: string) =>
+  fetch('/api/quicknote', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  }).then((r) => json<{ recent: string[] }>(r));

@@ -85,6 +85,58 @@ describe('PUT /api/note/*', () => {
   });
 });
 
+describe('POST /api/quicknote', () => {
+  it('未登入 401', async () => {
+    const res = await app.request('/api/quicknote', {
+      method: 'POST', body: JSON.stringify({ text: '一個靈感' }),
+      headers: { 'Content-Type': 'application/json' },
+    }, env());
+    expect(res.status).toBe(401);
+  });
+  it('空白文字 400', async () => {
+    const res = await app.request('/api/quicknote', {
+      method: 'POST', body: JSON.stringify({ text: '   ' }),
+      headers: { 'Content-Type': 'application/json', ...(await authedHeaders()) },
+    }, env());
+    expect(res.status).toBe(400);
+  });
+  it('檔案不存在時新建，commit 到 GitHub 並更新 KV，回傳最近清單', async () => {
+    let captured: { message?: string; content?: string } = {};
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL, init?: RequestInit) => {
+      if (String(url).includes('/contents/') && (!init || init.method === undefined)) {
+        return new Response('not found', { status: 404 });
+      }
+      const body = JSON.parse(String(init?.body));
+      captured = { message: body.message, content: body.content };
+      return Response.json({ content: { sha: 'new1' } });
+    }));
+    const res = await app.request('/api/quicknote', {
+      method: 'POST', body: JSON.stringify({ text: '第一個靈感' }),
+      headers: { 'Content-Type': 'application/json', ...(await authedHeaders()) },
+    }, env());
+    expect(res.status).toBe(200);
+    expect(captured.message).toBe('docs: 靈感');
+    const decoded = new TextDecoder().decode(Uint8Array.from(atob(captured.content!.replace(/\n/g, '')), (ch) => ch.charCodeAt(0)));
+    expect(decoded).toContain('第一個靈感');
+    const body = await res.json() as { recent: string[] };
+    expect(body.recent).toHaveLength(1);
+    expect(body.recent[0]).toContain('第一個靈感');
+  });
+  it('sha 衝突回 409', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL, init?: RequestInit) => {
+      if (String(url).includes('/contents/') && (!init || init.method === undefined)) {
+        return new Response('not found', { status: 404 });
+      }
+      return new Response('conflict', { status: 409 });
+    }));
+    const res = await app.request('/api/quicknote', {
+      method: 'POST', body: JSON.stringify({ text: '第一個靈感' }),
+      headers: { 'Content-Type': 'application/json', ...(await authedHeaders()) },
+    }, env());
+    expect(res.status).toBe(409);
+  });
+});
+
 describe('POST /api/webhook', () => {
   async function sign(body: string) {
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('ws'),

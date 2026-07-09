@@ -6,6 +6,7 @@ describe('路徑規則', () => {
     expect(isPublicPath('個人學習/a.md')).toBe(true);
     expect(isPublicPath('好工具推薦/x/y.md')).toBe(true);
     expect(isPublicPath('工作專案/b.md')).toBe(true);
+    expect(isPublicPath('靈感/隨手靈感.md')).toBe(true);
   });
   it('wiki 與其他資料夾不公開', () => {
     expect(isPublicPath('wiki/entities/k.md')).toBe(false);

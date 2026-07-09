@@ -1,11 +1,17 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { SiteIndex } from '../../shared/types';
 import type { Route } from '../router';
 import { buildFolderTree, type FolderNode } from '../folderTree';
+import { QUICKNOTE_PATH, recentQuicknotes } from '../../shared/quicknote';
+import { fetchNote, postQuicknote } from '../api';
 
-export default function Sidebar({ index, route, dark, currentPath, open: drawerOpen, onToggleDark, onOpenSearch }: {
+export default function Sidebar({
+  index, route, dark, currentPath, open: drawerOpen, requireLogin,
+  onToggleDark, onOpenSearch, onQuicknoteSaved,
+}: {
   index: SiteIndex; route: Route; dark: boolean; currentPath?: string; open: boolean;
-  onToggleDark: () => void; onOpenSearch: () => void;
+  requireLogin: (then: () => void) => void;
+  onToggleDark: () => void; onOpenSearch: () => void; onQuicknoteSaved: () => void;
 }) {
   const tree = buildFolderTree(index.notes);
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -15,6 +21,37 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
     : [];
   const label = { font: "500 11px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)' } as const;
   const positions = [[62, 30], [166, 38], [146, 82], [42, 70], [190, 78]];
+
+  const [quicknoteText, setQuicknoteText] = useState('');
+  const [recent, setRecent] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [quicknoteError, setQuicknoteError] = useState(false);
+
+  useEffect(() => {
+    fetchNote(QUICKNOTE_PATH).then((n) => setRecent(recentQuicknotes(n.content))).catch(() => setRecent([]));
+  }, []);
+
+  const submitQuicknote = useCallback(() => {
+    const text = quicknoteText.trim();
+    if (!text || saving) return;
+    requireLogin(async () => {
+      setSaving(true);
+      setQuicknoteError(false);
+      try {
+        const { recent } = await postQuicknote(text);
+        setRecent(recent);
+        setQuicknoteText('');
+        setSavedFlash(true);
+        setTimeout(() => setSavedFlash(false), 1500);
+        onQuicknoteSaved();
+      } catch {
+        setQuicknoteError(true);
+      } finally {
+        setSaving(false);
+      }
+    });
+  }, [quicknoteText, saving, requireLogin, onQuicknoteSaved]);
 
   return (
     <div className={`sidebar${drawerOpen ? ' open' : ''}`} style={{ borderRight: '1px solid var(--ln)', padding: '28px 22px 22px', display: 'flex', flexDirection: 'column', gap: 18, minHeight: 0 }}>
@@ -36,6 +73,31 @@ export default function Sidebar({ index, route, dark, currentPath, open: drawerO
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" strokeWidth="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg>
           資料庫
         </a>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ ...label, marginBottom: 6 }}>靈感</div>
+          <textarea value={quicknoteText} onChange={(e) => setQuicknoteText(e.target.value)}
+            onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); submitQuicknote(); } }}
+            placeholder="記下一個靈感…" aria-label="記下一個靈感" rows={2}
+            style={{ width: '100%', resize: 'vertical', border: '1px solid var(--ln)', borderRadius: 8, padding: '8px 10px', background: 'var(--pn)', color: 'var(--hd)', font: "13px 'Noto Sans TC',sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, minHeight: 18 }}>
+            <button className="btn-reset" onClick={submitQuicknote} disabled={saving}
+              style={{ display: 'inline-block', font: "500 12.5px 'Noto Sans TC',sans-serif", color: '#fff', background: 'var(--ac)', borderRadius: 6, padding: '5px 12px', cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1 }}>
+              {saving ? '記錄中…' : '記下來'}
+            </button>
+            {savedFlash && <span style={{ fontSize: 12, color: 'var(--mu)' }}>已記下</span>}
+            {quicknoteError && <span role="alert" style={{ fontSize: 12, color: 'var(--ac)' }}>失敗，請再試一次</span>}
+          </div>
+          {recent.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8 }}>
+              {recent.map((entry, i) => (
+                <a key={i} className="btn-reset" href={`#/note/${encodeURIComponent(QUICKNOTE_PATH)}`}
+                  style={{ fontSize: 12, color: 'var(--mu)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '2px 4px' }}>
+                  {entry.replace(/^- \[[^\]]+\]\s*/, '')}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {current && (
