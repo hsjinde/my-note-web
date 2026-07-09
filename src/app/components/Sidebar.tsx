@@ -15,12 +15,7 @@ export default function Sidebar({
 }) {
   const tree = buildFolderTree(index.notes);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const current = currentPath ? index.notes.find((n) => n.path === currentPath) : undefined;
-  const neighbors = current
-    ? index.notes.filter((n) => current.linksTo.includes(n.path) || n.linksTo.includes(current.path)).slice(0, 5)
-    : [];
   const label = { font: "500 11px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)' } as const;
-  const positions = [[62, 30], [166, 38], [146, 82], [42, 70], [190, 78]];
 
   const [quicknoteText, setQuicknoteText] = useState('');
   const [recent, setRecent] = useState<string[]>([]);
@@ -100,23 +95,6 @@ export default function Sidebar({
         </div>
       </div>
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {current && (
-          <div>
-            <div style={{ ...label, marginBottom: 8 }}>關聯圖</div>
-            <div style={{ height: 110, background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 8 }}>
-              <svg width="100%" height="100%" viewBox="0 0 234 108">
-                {neighbors.map((n, i) => (
-                  <line key={n.path} x1="112" y1="54" x2={positions[i][0]} y2={positions[i][1]} stroke="var(--ln)" strokeWidth="1" />
-                ))}
-                <circle cx="112" cy="54" r="6" fill="var(--ac)" />
-                {neighbors.map((n, i) => (
-                  <circle key={n.path} cx={positions[i][0]} cy={positions[i][1]} r="4" fill={i % 3 === 2 ? 'var(--a2)' : 'var(--mu)'}
-                    style={{ cursor: 'pointer' }} onClick={() => (location.hash = `#/note/${encodeURIComponent(n.path)}`)} />
-                ))}
-              </svg>
-            </div>
-          </div>
-        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button className="btn-reset" onClick={onToggleDark} aria-label={dark ? '切換為亮色主題' : '切換為深色主題'} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--ln)', borderRadius: 20, padding: 4, background: 'var(--pn)' }}>
             <span style={{ width: 24, height: 24, borderRadius: '50%', background: dark ? 'transparent' : '#f6d36b88', display: 'grid', placeItems: 'center', fontSize: 12, color: 'var(--hd)' }}>☀</span>
