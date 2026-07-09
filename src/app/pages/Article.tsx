@@ -101,6 +101,21 @@ export default function Article({ path, index, requireLogin, onSaved }: {
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  const headingHref = (id: string) => `#/note/${encodeURIComponent(path)}?h=${encodeURIComponent(id)}`;
+  const goHeading = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    history.replaceState(null, '', headingHref(id));
+  };
+
+  // Honor a shared deep link (#/note/<path>?h=<id>) once the article is rendered.
+  useEffect(() => {
+    if (!rendered) return;
+    const m = location.hash.match(/[?&]h=([^&]+)/);
+    if (!m) return;
+    const id = decodeURIComponent(m[1]);
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+  }, [rendered, path]);
+
   if (error) {
     return (
       <div style={{ padding: 60 }}>
@@ -119,9 +134,9 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           <span style={{ font: "600 16px 'Noto Serif TC',serif", color: 'var(--hd)' }}>{title}</span>
           <span style={{ font: "12px 'IBM Plex Mono',monospace", color: 'var(--mu)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: '1 1 60px' }}>{path}</span>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button className="btn-reset" onClick={cancelEdit}
+            <button className="btn-reset tap-44" onClick={cancelEdit}
               style={{ fontSize: 13.5, border: '1px solid var(--ln)', borderRadius: 8, padding: '9px 16px', background: 'var(--bg)', color: 'var(--tx)' }}>取消</button>
-            <button className="btn-reset" onClick={doSave} disabled={saving}
+            <button className="btn-reset tap-44" onClick={doSave} disabled={saving}
               style={{ fontSize: 13.5, fontWeight: 500, color: '#fff', background: 'var(--ac)', borderRadius: 8, padding: '10px 18px', opacity: saving ? 0.6 : 1, cursor: saving ? 'wait' : 'pointer' }}>
               {saving ? '儲存中…' : '儲存'}
             </button>
@@ -147,7 +162,7 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           </div>
         )}
         <textarea className="editor-pad" value={draft} onChange={(e) => changeDraft(e.target.value)} spellCheck={false} aria-label="筆記內容"
-          style={{ flex: 1, minHeight: 0, resize: 'none', border: 'none', outline: 'none', background: 'var(--bg)', color: 'var(--tx)', font: "14px/2 'IBM Plex Mono',monospace" }} />
+          style={{ flex: 1, minHeight: 0, resize: 'none', border: 'none', outlineOffset: '-2px', background: 'var(--bg)', color: 'var(--tx)', font: "14px/2 'IBM Plex Mono',monospace" }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 24px', borderTop: '1px solid var(--ln)', font: "11.5px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>
           <span>Markdown</span><span>{draft.length} 字元</span><span style={{ marginLeft: 'auto' }}>⌘S 儲存 · Esc 取消</span>
         </div>
@@ -163,7 +178,7 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           <div style={{ font: "500 11px 'Noto Sans TC',sans-serif", letterSpacing: '.12em', color: 'var(--mu)', marginBottom: 10 }}>目錄</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
             {rendered.toc.map((h) => (
-              <a key={h.id} href={`#/note/${encodeURIComponent(path)}`} onClick={(e) => { e.preventDefault(); document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' }); }}
+              <a key={h.id} href={headingHref(h.id)} onClick={(e) => { e.preventDefault(); goHeading(h.id); }}
                 style={{ paddingLeft: h.level === 3 ? 14 : 0, color: h.level === 3 ? 'var(--m2)' : 'var(--tx)', cursor: 'pointer', textDecoration: 'none' }}>
                 {h.text}
               </a>
@@ -171,8 +186,8 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           </div>
         </nav>
       )}
-      <nav aria-label="麵包屑" style={{ fontSize: 13, color: 'var(--mu)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14 }}>
-        <a href="#/" style={{ color: 'var(--ac)', textDecoration: 'none', padding: '4px 0' }}>首頁</a>
+      <nav aria-label="麵包屑" style={{ fontSize: 13, color: 'var(--m2)', display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+        <a href="#/" className="tap-44" style={{ color: 'var(--ac)', textDecoration: 'none', padding: '4px 0' }}>首頁</a>
         {folderSegs.map((seg, i) => (
           <Fragment key={i}><span>/</span><span>{seg}</span></Fragment>
         ))}
@@ -184,7 +199,7 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           <button key={t} className="btn-reset" onClick={() => (location.hash = `#/tag/${encodeURIComponent(t)}`)}
             style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--ac)', background: 'var(--ab)', borderRadius: 12, padding: '4px 10px' }}>#{t}</button>
         ))}
-        <button className="btn-reset" onClick={startEdit}
+        <button className="btn-reset tap-44" onClick={startEdit}
           style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tx)', border: '1px solid var(--ln)', borderRadius: 8, padding: '8px 14px', background: 'var(--pn)' }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>編輯
         </button>
@@ -197,7 +212,7 @@ export default function Article({ path, index, requireLogin, onSaved }: {
           <summary>目錄</summary>
           <nav aria-label="目錄">
             {rendered.toc.map((h) => (
-              <a key={h.id} href={`#/note/${encodeURIComponent(path)}`} onClick={(e) => { e.preventDefault(); document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' }); }}
+              <a key={h.id} href={headingHref(h.id)} onClick={(e) => { e.preventDefault(); goHeading(h.id); }}
                 style={{ paddingLeft: h.level === 3 ? 14 : 0, color: h.level === 3 ? 'var(--m2)' : 'var(--tx)', textDecoration: 'none' }}>
                 {h.text}
               </a>

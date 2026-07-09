@@ -6,6 +6,7 @@ describe('parseHash', () => {
     expect(parseHash('')).toEqual({ page: 'home' });
     expect(parseHash('#/')).toEqual({ page: 'home' });
     expect(parseHash(`#/note/${encodeURIComponent('個人學習/a.md')}`)).toEqual({ page: 'article', path: '個人學習/a.md' });
+    expect(parseHash(`#/note/${encodeURIComponent('個人學習/a.md')}?h=${encodeURIComponent('h-概述')}`)).toEqual({ page: 'article', path: '個人學習/a.md' });
     expect(parseHash('#/tag/mcp')).toEqual({ page: 'tag', tag: 'mcp' });
     expect(parseHash('#/db')).toEqual({ page: 'db' });
     expect(parseHash('#/unknown')).toEqual({ page: 'home' });
