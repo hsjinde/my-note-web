@@ -1,7 +1,8 @@
 import { parse as parseYaml } from 'yaml';
 import type { NoteMeta, SiteIndex } from '../shared/types';
+import { PUBLIC_FOLDERS } from '../shared/folders';
 
-export const PUBLIC_FOLDERS = ['個人學習', '好工具推薦', '工作專案', '靈感'];
+export { PUBLIC_FOLDERS };
 export const AI_EXTRA_FOLDERS = ['wiki'];
 
 const inFolders = (path: string, folders: string[]) =>
