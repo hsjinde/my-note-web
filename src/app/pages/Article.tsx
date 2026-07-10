@@ -116,6 +116,14 @@ export default function Article({ path, index, requireLogin, onSaved }: {
     requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
   }, [rendered, path]);
 
+  // 由「新增筆記」導來的 #/note/<path>?edit=1：載入後自動進入編輯，並清掉旗標避免重整／返回時重觸發。
+  useEffect(() => {
+    if (!note || editing) return;
+    if (!/[?&]edit=1(?:&|$)/.test(location.hash)) return;
+    startEdit();
+    history.replaceState(null, '', `#/note/${encodeURIComponent(path)}`);
+  }, [note, editing, path]);
+
   if (error) {
     return (
       <div style={{ padding: 60 }}>
