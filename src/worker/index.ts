@@ -112,6 +112,34 @@ app.post('/api/quicknote', requireAuth, async (c) => {
   }
 });
 
+app.post('/api/note', requireAuth, async (c) => {
+  const { folder, title } = await c.req.json<{ folder: string; title: string }>();
+  const t = title?.trim();
+  if (!t) return c.json({ error: 'empty title' }, 400);
+  if (/[/\\:*?"<>|]/.test(t)) return c.json({ error: 'invalid title' }, 400);
+  const path = `${folder}/${t}.md`;
+  if (!isPublicPath(path)) return c.json({ error: 'invalid path' }, 400);
+
+  const key = shardKey(path);
+  const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
+  if (shard[path]) return c.json({ error: 'already exists' }, 409);
+
+  const gh = github(c.env);
+  if (await gh.getFile(path)) return c.json({ error: 'already exists' }, 409);
+
+  const content = `---\ntitle: ${t}\n---\n\n`;
+  try {
+    const result = await gh.putFile(path, content, `docs: 新增「${t}」`);
+    shard[path] = { content, sha: result.sha };
+    await c.env.NOTES.put(key, JSON.stringify(shard));
+    await rebuildIndexFromKV(c.env.NOTES);
+    return c.json({ path, sha: result.sha });
+  } catch (e) {
+    if (e instanceof ShaConflictError) return c.json({ error: 'already exists' }, 409);
+    throw e;
+  }
+});
+
 app.post('/api/sync', requireAuth, async (c) => {
   return c.json(await fullSync(c.env.NOTES, github(c.env)));
 });
