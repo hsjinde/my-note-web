@@ -7,11 +7,12 @@ import { fetchNote, postQuicknote } from '../api';
 
 export default function Sidebar({
   index, route, dark, currentPath, open: drawerOpen, requireLogin,
-  onToggleDark, onOpenSearch, onQuicknoteSaved,
+  onToggleDark, onOpenSearch, onQuicknoteSaved, onNewNote,
 }: {
   index: SiteIndex; route: Route; dark: boolean; currentPath?: string; open: boolean;
   requireLogin: (then: () => void) => void;
   onToggleDark: () => void; onOpenSearch: () => void; onQuicknoteSaved: () => void;
+  onNewNote: () => void;
 }) {
   const tree = buildFolderTree(index.notes);
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -68,6 +69,10 @@ export default function Sidebar({
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" strokeWidth="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" /><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg>
           資料庫
         </a>
+        <button className="btn-reset" onClick={onNewNote}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '7px 10px', borderRadius: 8, border: '1px solid var(--ln)', background: 'var(--pn)', color: 'var(--tx)', font: "13px 'Noto Sans TC',sans-serif", width: '100%' }}>
+          <span aria-hidden="true" style={{ color: 'var(--mu)', fontSize: 14, lineHeight: 1 }}>＋</span>新增筆記
+        </button>
         <div style={{ marginTop: 8 }}>
           <div style={{ ...label, marginBottom: 6 }}>靈感</div>
           <textarea value={quicknoteText} onChange={(e) => setQuicknoteText(e.target.value)}
