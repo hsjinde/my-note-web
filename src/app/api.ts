@@ -33,3 +33,8 @@ export const postQuicknote = (text: string) =>
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
   }).then((r) => json<{ recent: string[] }>(r));
+export const postNote = (folder: string, title: string) =>
+  fetch('/api/note', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folder, title }),
+  }).then((r) => json<{ path: string; sha: string }>(r));
