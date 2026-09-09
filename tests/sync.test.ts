@@ -264,6 +264,19 @@ describe('backfillUpdatedAt', () => {
     expect(await backfillUpdatedAt(kv, gh)).toEqual({ filled: 4, pending: 0 });
   });
 
+  it('可以限制這次最多補幾筆，讓呼叫端分配抓取預算', async () => {
+    const shard: Record<string, { content: string; sha: string }> = {};
+    const dates: Record<string, string> = {};
+    for (let i = 0; i < 10; i++) {
+      shard[`個人學習/n${i}.md`] = { content: `內容${i}`, sha: `s${i}` };
+      dates[`個人學習/n${i}.md`] = '2026-09-02T08:59:47Z';
+    }
+    const kv = mockKV({ 'shard:個人學習': JSON.stringify(shard) });
+    const gh = mockGH({}, dates);
+    expect(await backfillUpdatedAt(kv, gh, 3)).toEqual({ filled: 3, pending: 7 });
+    expect((gh.getLastCommitDate as ReturnType<typeof vi.fn>).mock.calls.length).toBe(3);
+  });
+
   it('全部都有 updatedAt 時不寫入也不重建索引', async () => {
     const kv = mockKV({
       'shard:個人學習': JSON.stringify({

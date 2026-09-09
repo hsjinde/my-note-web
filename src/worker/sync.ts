@@ -145,7 +145,7 @@ export async function reconcileSync(
 // 一次性回填：舊筆記的 updatedAt 是空的（KV 以前沒記這個欄位），
 // tree 與 contents API 都不帶時間，只能逐檔問 commits API，所以同樣分批做。
 export async function backfillUpdatedAt(
-  kv: KVNamespace, gh: GitHub,
+  kv: KVNamespace, gh: GitHub, limit = MAX_FETCH_PER_SYNC,
 ): Promise<{ filled: number; pending: number }> {
   const listed = await kv.list({ prefix: 'shard:' });
   const shards = new Map<string, Shard>();
@@ -158,7 +158,7 @@ export async function backfillUpdatedAt(
     }
   }
 
-  const batch = missing.slice(0, MAX_FETCH_PER_SYNC);
+  const batch = missing.slice(0, Math.max(0, limit));
   const dirty = new Set<string>();
   let filled = 0;
   for (const { key, path } of batch) {

@@ -38,6 +38,7 @@ my-note push → /api/webhook（驗簽＋比對分支）→ reconcileSync：tree
 登入後 POST /api/sync            → fullSync：tree API 取 sha + tarball 取全文，整批重寫
 登入後 POST /api/reconcile       → reconcileSync：同 webhook 那條，分批補齊落後的內容
 登入後 POST /api/backfill-dates  → backfillUpdatedAt：一次性補舊筆記的 updatedAt（分批）
+每小時 Cron Trigger              → scheduled：先 reconcileSync，再用剩下的抓取預算跑 backfillUpdatedAt
 網頁編輯 PUT /api/note/*         → GitHub putFile（帶 sha，衝突回 409）→ 更新 KV → 重建索引
 ```
 
@@ -45,6 +46,8 @@ KV（binding `NOTES`）只有兩類 key：
 
 - `shard:<頂層資料夾>` → `Record<path, { content, sha, updatedAt? }>`——每個頂層資料夾一個 shard（見 sync.ts 的 `shardKey`），存筆記原文、GitHub blob sha，以及內容最後變更時間。
 - `meta:index` → `SiteIndex`——由全部 shard 重建（`rebuildIndexFromKV`），含 title/tags/excerpt/wikilink 解析（content.ts 的 `buildIndex`）。
+
+Worker 的 default export 是 `{ fetch, scheduled }`（測試 import 具名的 `app`）。`scheduled` 每小時跑一次，是 webhook 的保險：webhook 若失效不會有任何警訊，靠排程照樣會把內容補齊。它與 `backfillUpdatedAt` 共用 `MAX_FETCH_PER_SYNC` 的抓取預算，避免單次 request 的 subrequest 超限。
 
 webhook 走的是**對帳**而不是增量：`reconcileSync` 不看 push payload，改用 `listMarkdownEntries()` 拿 tree 上的完整 blob sha 清單跟 KV 比對，只抓 sha 不同或缺少的檔案，並移除 tree 上已不存在的。這是刻意的——只信任 payload 的話，webhook 漏送一次那些檔案就永久漏掉（2026-09 曾因此累積 117 篇缺漏、55 篇過期）。單次對帳最多抓 `MAX_FETCH_PER_SYNC`（40）個檔案以免超過 Workers 的 subrequest 上限，其餘由 `pending` 回報並留給下一次 push。相對地 `listMarkdownEntries()` 在 tree 被截斷時會丟錯，避免拿半套清單去比對而誤刪整批筆記。
 

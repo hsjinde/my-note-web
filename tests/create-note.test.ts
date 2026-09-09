@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import app from '../src/worker/index';
+import { app } from '../src/worker/index';
 import { mockKV } from './helpers';
 import { createSession } from '../src/worker/auth';
 

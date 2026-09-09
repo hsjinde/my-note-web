@@ -5,7 +5,10 @@ import { isPublicPath, publicIndex, parseNote } from './content';
 import type { SiteIndex } from '../shared/types';
 import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
-import { fullSync, reconcileSync, backfillUpdatedAt, rebuildIndexFromKV, shardKey, type Shard } from './sync';
+import {
+  fullSync, reconcileSync, backfillUpdatedAt, rebuildIndexFromKV, shardKey,
+  MAX_FETCH_PER_SYNC, type Shard,
+} from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
 import { QUICKNOTE_PATH, appendQuicknote, formatTaipeiTimestamp, recentQuicknotes } from '../shared/quicknote';
@@ -171,4 +174,17 @@ app.post('/api/ask', requireAuth, async (c) => {
   return c.json({ answer: await ask(c.env, question.trim()) });
 });
 
-export default app;
+export { app };
+
+// Cron Trigger：webhook 是快速路徑，這裡是保險。webhook 若失效（設定被刪、secret 改掉）
+// 不會有任何警訊，靠這個排程照樣會把內容補齊；順便分批補完舊筆記的 updatedAt。
+// 兩件事共用同一份抓取預算，免得單次 request 的 subrequest 超限。
+export default {
+  fetch: app.fetch,
+  async scheduled(_event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+    const gh = github(env);
+    const { synced } = await reconcileSync(env.NOTES, gh);
+    const budget = MAX_FETCH_PER_SYNC - synced;
+    if (budget > 0) await backfillUpdatedAt(env.NOTES, gh, budget);
+  },
+};

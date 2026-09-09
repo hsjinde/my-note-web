@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import app from '../src/worker/index';
+import { app } from '../src/worker/index';
 import { mockKV } from './helpers';
 import { buildIndex } from '../src/worker/content';
 
