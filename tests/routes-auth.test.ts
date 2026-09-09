@@ -137,6 +137,30 @@ describe('POST /api/quicknote', () => {
   });
 });
 
+describe('POST /api/reconcile', () => {
+  it('未登入 401', async () => {
+    const res = await app.request('/api/reconcile', { method: 'POST' }, env());
+    expect(res.status).toBe(401);
+  });
+
+  it('登入後跑對帳同步，回報這批補了多少、還剩多少', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
+      if (String(url).includes('/git/trees/')) {
+        return Response.json({ tree: [
+          { path: '個人學習/a.md', type: 'blob', sha: 'sha-a' },
+          { path: '個人學習/b.md', type: 'blob', sha: 'sha-b' },
+        ]});
+      }
+      return Response.json({ content: btoa('note'), sha: 'sha-x', encoding: 'base64' });
+    }));
+    const res = await app.request('/api/reconcile', {
+      method: 'POST', headers: await authedHeaders(),
+    }, env());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ synced: 2, removed: 0, pending: 0 });
+  });
+});
+
 describe('POST /api/webhook', () => {
   async function sign(body: string) {
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('ws'),
@@ -150,15 +174,34 @@ describe('POST /api/webhook', () => {
     }, env());
     expect(res.status).toBe(401);
   });
-  it('好簽章觸發增量同步', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Response.json({
-      content: btoa(String.fromCharCode(...new TextEncoder().encode('新'))), sha: 's9', encoding: 'base64',
-    })));
-    const body = JSON.stringify({ commits: [{ added: ['個人學習/n.md'], modified: [], removed: [] }] });
+  it('非目標分支的 push 不同步', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const body = JSON.stringify({ ref: 'refs/heads/feature-x' });
     const res = await app.request('/api/webhook', {
       method: 'POST', body, headers: { 'X-Hub-Signature-256': await sign(body) },
     }, env());
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ synced: 1, removed: 0 });
+    expect(await res.json()).toEqual({ skipped: true, ref: 'refs/heads/feature-x' });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('好簽章觸發對帳同步，補上 payload 沒提到的筆記', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
+      if (String(url).includes('/git/trees/')) {
+        return Response.json({ tree: [
+          { path: '個人學習/a.md', type: 'blob', sha: 'sha-a' },
+          { path: '個人學習/b.md', type: 'blob', sha: 'sha-b' },
+        ]});
+      }
+      return Response.json({ content: btoa('note'), sha: 'sha-x', encoding: 'base64' });
+    }));
+    // payload 只提到 a.md，b.md 是先前漏掉的，對帳時要一起補回來
+    const body = JSON.stringify({ ref: 'refs/heads/main', commits: [{ added: ['個人學習/a.md'] }] });
+    const res = await app.request('/api/webhook', {
+      method: 'POST', body, headers: { 'X-Hub-Signature-256': await sign(body) },
+    }, env());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ synced: 2, removed: 0, pending: 0 });
   });
 });

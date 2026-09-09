@@ -5,7 +5,7 @@ import { isPublicPath, publicIndex, parseNote } from './content';
 import type { SiteIndex } from '../shared/types';
 import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
-import { fullSync, incrementalSync, rebuildIndexFromKV, shardKey, type PushPayload } from './sync';
+import { fullSync, reconcileSync, rebuildIndexFromKV, shardKey } from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
 import { QUICKNOTE_PATH, appendQuicknote, formatTaipeiTimestamp, recentQuicknotes } from '../shared/quicknote';
@@ -144,12 +144,20 @@ app.post('/api/sync', requireAuth, async (c) => {
   return c.json(await fullSync(c.env.NOTES, github(c.env)));
 });
 
+// fullSync 要在單一 request 內解整包 tarball 並重建索引，vault 夠大時會撞到 Workers
+// 的 CPU 上限；對帳同步分批進行，重複打就能把落後的內容逐步補齊。
+app.post('/api/reconcile', requireAuth, async (c) => {
+  return c.json(await reconcileSync(c.env.NOTES, github(c.env)));
+});
+
 app.post('/api/webhook', async (c) => {
   const raw = await c.req.text();
   const ok = await verifyGithubSignature(c.env.WEBHOOK_SECRET, raw, c.req.header('X-Hub-Signature-256'));
   if (!ok) return c.json({ error: 'bad signature' }, 401);
-  const payload = JSON.parse(raw) as PushPayload;
-  return c.json(await incrementalSync(c.env.NOTES, github(c.env), payload));
+  const { ref } = JSON.parse(raw) as { ref?: string };
+  // 只認目標分支：其他分支的刪檔會讓對帳把還在 main 上的筆記當成已刪除。
+  if (ref !== `refs/heads/${c.env.GITHUB_BRANCH}`) return c.json({ skipped: true, ref: ref ?? null });
+  return c.json(await reconcileSync(c.env.NOTES, github(c.env)));
 });
 
 app.post('/api/ask', requireAuth, async (c) => {

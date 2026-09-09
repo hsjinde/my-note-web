@@ -27,7 +27,10 @@ export class GitHub {
   async listMarkdownEntries(): Promise<{ path: string; sha: string }[]> {
     const res = await this.req(`/git/trees/${this.branch}?recursive=1`);
     if (!res.ok) throw new Error(`getTree failed: ${res.status}`);
-    const data = (await res.json()) as { tree: { path: string; type: string; sha: string }[] };
+    const data = (await res.json()) as { tree: { path: string; type: string; sha: string }[]; truncated?: boolean };
+    // tree 被截斷代表這不是完整清單；對帳同步會把「清單裡沒有」當成已刪除，
+    // 拿截斷的清單去比對會誤刪整批筆記，所以寧可失敗也不回傳半套資料。
+    if (data.truncated) throw new Error('getTree truncated: repo tree too large for a single response');
     return data.tree
       .filter((t) => t.type === 'blob' && t.path.endsWith('.md'))
       .map((t) => ({ path: t.path, sha: t.sha }));

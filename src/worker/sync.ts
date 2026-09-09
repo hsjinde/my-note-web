@@ -2,10 +2,6 @@ import type { GitHub } from './github';
 import { buildIndex, isIndexedPath } from './content';
 import { parseTarGz } from './tarball';
 
-export type PushPayload = {
-  commits?: { added?: string[]; modified?: string[]; removed?: string[] }[];
-};
-
 type Shard = Record<string, { content: string; sha: string }>;
 
 export function shardKey(path: string): string {
@@ -67,35 +63,63 @@ export async function fullSync(kv: KVNamespace, gh: GitHub): Promise<{ synced: n
   return { synced };
 }
 
-export async function incrementalSync(
-  kv: KVNamespace, gh: GitHub, payload: PushPayload,
-): Promise<{ synced: number; removed: number }> {
-  const changed = new Set<string>();
-  const removedSet = new Set<string>();
-  for (const c of payload.commits ?? []) {
-    for (const p of [...(c.added ?? []), ...(c.modified ?? [])]) if (isIndexedPath(p)) { changed.add(p); removedSet.delete(p); }
-    for (const p of c.removed ?? []) if (isIndexedPath(p)) { removedSet.add(p); changed.delete(p); }
+// 一次對帳最多抓幾個檔案。Workers 對單一 request 的 subrequest 數量有上限，
+// 累積大量漏同步時一次抓完會超限，所以分批補，剩下的留給下一次 push。
+export const MAX_FETCH_PER_RECONCILE = 40;
+
+// 以 GitHub tree 的完整 sha 清單為準對帳，不看 push payload。
+// webhook 只要漏送一次，信任 payload 的增量同步就會永久漏掉那些檔案；
+// 改成對帳後，任何漏掉的變動都會在下一次 push 自動補回來。
+export async function reconcileSync(
+  kv: KVNamespace, gh: GitHub,
+): Promise<{ synced: number; removed: number; pending: number }> {
+  const entries = (await gh.listMarkdownEntries()).filter((e) => isIndexedPath(e.path));
+  const wanted = new Map(entries.map((e) => [e.path, e.sha]));
+
+  const shards = new Map<string, Shard>();
+  const dirty = new Set<string>();
+  const loadShard = async (key: string): Promise<Shard> => {
+    if (!shards.has(key)) shards.set(key, await getShard(kv, key));
+    return shards.get(key)!;
+  };
+  // 先載入現有的全部 shard，才有辦法判斷哪些筆記已經從 GitHub 消失。
+  const listed = await kv.list({ prefix: 'shard:' });
+  for (const k of listed.keys) await loadShard(k.name);
+
+  const stale: string[] = [];
+  for (const [path, sha] of wanted) {
+    const shard = await loadShard(shardKey(path));
+    if (shard[path]?.sha !== sha) stale.push(path);
   }
-  if (!changed.size && !removedSet.size) return { synced: 0, removed: 0 };
 
-  const affectedKeys = new Set([...changed, ...removedSet].map(shardKey));
-  const shardCache = new Map<string, Shard>();
-  for (const key of affectedKeys) shardCache.set(key, await getShard(kv, key));
+  let removed = 0;
+  for (const [key, shard] of shards) {
+    for (const path of Object.keys(shard)) {
+      if (wanted.has(path)) continue;
+      delete shard[path];
+      dirty.add(key);
+      removed++;
+    }
+  }
 
+  const batch = stale.slice(0, MAX_FETCH_PER_RECONCILE);
   let synced = 0;
-  for (const path of changed) {
+  for (const path of batch) {
     const file = await gh.getFile(path);
-    if (!file) { removedSet.add(path); continue; }
-    shardCache.get(shardKey(path))![path] = file;
+    if (!file) continue; // tree 與 contents 短暫不同步，下次對帳再處理
+    const key = shardKey(path);
+    (await loadShard(key))[path] = file;
+    dirty.add(key);
     synced++;
   }
-  let removed = 0;
-  for (const path of removedSet) {
-    const shard = shardCache.get(shardKey(path))!;
-    if (path in shard) { delete shard[path]; removed++; }
-  }
 
-  for (const [key, shard] of shardCache) await kv.put(key, JSON.stringify(shard));
-  if (synced || removed) await rebuildIndexFromKV(kv);
-  return { synced, removed };
+  if (dirty.size) {
+    for (const key of dirty) {
+      const shard = shards.get(key)!;
+      if (Object.keys(shard).length) await kv.put(key, JSON.stringify(shard));
+      else await kv.delete(key);
+    }
+    await rebuildIndexFromKV(kv);
+  }
+  return { synced, removed, pending: stale.length - batch.length };
 }

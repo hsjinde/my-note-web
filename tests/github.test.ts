@@ -21,6 +21,13 @@ describe('GitHub client', () => {
     expect(await gh().listMarkdownEntries()).toEqual([{ path: '個人學習/a.md', sha: 'sha-a' }]);
   });
 
+  it('listMarkdownEntries 在 tree 被截斷時丟錯，不讓呼叫端把缺漏當成已刪除', async () => {
+    stubFetch(() => Response.json({ truncated: true, tree: [
+      { path: '個人學習/a.md', type: 'blob', sha: 'sha-a' },
+    ]}));
+    await expect(gh().listMarkdownEntries()).rejects.toThrow(/truncated/);
+  });
+
   it('getTarballBuffer 打 tarball endpoint 並回 ArrayBuffer', async () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
     stubFetch((url) => {
