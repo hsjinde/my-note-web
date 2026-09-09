@@ -3,7 +3,7 @@ import { buildFolderTree } from '../src/app/folderTree';
 import type { NoteMeta } from '../src/shared/types';
 
 function note(path: string, folder: string): NoteMeta {
-  return { path, title: path, folder, tags: [], date: null, excerpt: '', links: [], linksTo: [], private: false };
+  return { path, title: path, folder, tags: [], date: null, updatedAt: null, excerpt: '', links: [], linksTo: [], private: false };
 }
 
 describe('buildFolderTree', () => {

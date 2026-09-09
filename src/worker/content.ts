@@ -25,7 +25,7 @@ export function splitFrontmatter(md: string): { fm: Record<string, unknown>; bod
 
 const WIKILINK = /\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g;
 
-export function parseNote(path: string, md: string): NoteMeta {
+export function parseNote(path: string, md: string, updatedAt?: string | null): NoteMeta {
   const { fm, body } = splitFrontmatter(md);
   const filename = path.split('/').pop()!.replace(/\.md$/, '');
   const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : [];
@@ -43,6 +43,7 @@ export function parseNote(path: string, md: string): NoteMeta {
     folder: path.split('/').slice(0, -1).join('/'),
     tags,
     date: rawDate ? String(rawDate).slice(0, 10) : null,
+    updatedAt: updatedAt ? updatedAt.slice(0, 10) : null,
     excerpt: plain.slice(0, 160),
     links,
     linksTo: [],
@@ -50,8 +51,8 @@ export function parseNote(path: string, md: string): NoteMeta {
   };
 }
 
-export function buildIndex(files: { path: string; content: string }[]): SiteIndex {
-  const notes = files.filter((f) => isIndexedPath(f.path)).map((f) => parseNote(f.path, f.content));
+export function buildIndex(files: { path: string; content: string; updatedAt?: string | null }[]): SiteIndex {
+  const notes = files.filter((f) => isIndexedPath(f.path)).map((f) => parseNote(f.path, f.content, f.updatedAt));
   const byKey = new Map<string, string>(); // 檔名/title（小寫）→ path
   for (const n of notes) {
     byKey.set(n.path.split('/').pop()!.replace(/\.md$/, '').toLowerCase(), n.path);

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { describe, it, expect, vi } from 'vitest';
 import { gzipSync } from 'node:zlib';
-import { fullSync, reconcileSync, shardKey, MAX_FETCH_PER_RECONCILE } from '../src/worker/sync';
+import { fullSync, reconcileSync, backfillUpdatedAt, shardKey, MAX_FETCH_PER_SYNC } from '../src/worker/sync';
 import { mockKV } from './helpers';
 import type { GitHub } from '../src/worker/github';
 
@@ -40,13 +40,14 @@ function makeTarballBuffer(files: Record<string, string>): ArrayBuffer {
   return gz.buffer.slice(gz.byteOffset, gz.byteOffset + gz.byteLength);
 }
 
-function mockGH(files: Record<string, string>): GitHub {
+function mockGH(files: Record<string, string>, dates: Record<string, string> = {}): GitHub {
   return {
     listMarkdownEntries: vi.fn(async () => Object.keys(files).map((path) => ({ path, sha: 'sha-' + path }))),
     getTarballBuffer: vi.fn(async () => makeTarballBuffer(files)),
     getFile: vi.fn(async (p: string) =>
       files[p] != null ? { content: files[p], sha: 'sha-' + p } : null),
     putFile: vi.fn(),
+    getLastCommitDate: vi.fn(async (p: string) => dates[p] ?? null),
   } as unknown as GitHub;
 }
 
@@ -68,7 +69,7 @@ describe('fullSync', () => {
     const r = await fullSync(kv, gh);
     expect(r.synced).toBe(2);
     const learnShard = (await kv.get('shard:個人學習', 'json')) as Record<string, { content: string; sha: string }>;
-    expect(learnShard['個人學習/a.md']).toEqual({ content: '---\ntitle: A\n---\n內容A', sha: 'sha-個人學習/a.md' });
+    expect(learnShard['個人學習/a.md']).toEqual({ content: '---\ntitle: A\n---\n內容A', sha: 'sha-個人學習/a.md', updatedAt: expect.any(String) });
     const wikiShard = (await kv.get('shard:wiki', 'json')) as Record<string, unknown>;
     expect(Object.keys(wikiShard)).toEqual(['wiki/k.md']);
     expect(await kv.get('shard:日常')).toBeNull();
@@ -124,7 +125,7 @@ describe('reconcileSync', () => {
     const r = await reconcileSync(kv, gh);
     expect(r).toEqual({ synced: 1, removed: 0, pending: 0 });
     const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { content: string; sha: string }>;
-    expect(shard['個人學習/a.md']).toEqual({ content: '九月的新版', sha: 'sha-個人學習/a.md' });
+    expect(shard['個人學習/a.md']).toEqual({ content: '九月的新版', sha: 'sha-個人學習/a.md', updatedAt: expect.any(String) });
   });
 
   it('GitHub 上已不存在的筆記從 shard 移除', async () => {
@@ -143,19 +144,19 @@ describe('reconcileSync', () => {
 
   it('單次抓取有上限，超出的留到下次並回報 pending', async () => {
     const files: Record<string, string> = {};
-    for (let i = 0; i < MAX_FETCH_PER_RECONCILE + 3; i++) files[`個人學習/n${i}.md`] = `內容${i}`;
+    for (let i = 0; i < MAX_FETCH_PER_SYNC + 3; i++) files[`個人學習/n${i}.md`] = `內容${i}`;
     const kv = mockKV();
     const gh = mockGH(files);
     const r = await reconcileSync(kv, gh);
-    expect(r).toEqual({ synced: MAX_FETCH_PER_RECONCILE, removed: 0, pending: 3 });
-    expect((gh.getFile as ReturnType<typeof vi.fn>).mock.calls.length).toBe(MAX_FETCH_PER_RECONCILE);
+    expect(r).toEqual({ synced: MAX_FETCH_PER_SYNC, removed: 0, pending: 3 });
+    expect((gh.getFile as ReturnType<typeof vi.fn>).mock.calls.length).toBe(MAX_FETCH_PER_SYNC);
     const r2 = await reconcileSync(kv, gh);
     expect(r2).toEqual({ synced: 3, removed: 0, pending: 0 });
   });
 
   it('抓取超過上限時，孤兒檔的刪除仍在同一次完成（刪除不花 subrequest）', async () => {
     const files: Record<string, string> = {};
-    for (let i = 0; i < MAX_FETCH_PER_RECONCILE + 5; i++) files[`個人學習/n${i}.md`] = `內容${i}`;
+    for (let i = 0; i < MAX_FETCH_PER_SYNC + 5; i++) files[`個人學習/n${i}.md`] = `內容${i}`;
     const kv = mockKV({
       'shard:個人學習': JSON.stringify({
         '個人學習/orphan1.md': { content: '已從 GitHub 刪除', sha: 's1' },
@@ -164,7 +165,7 @@ describe('reconcileSync', () => {
     });
     const gh = mockGH(files);
     const r = await reconcileSync(kv, gh);
-    expect(r).toEqual({ synced: MAX_FETCH_PER_RECONCILE, removed: 2, pending: 5 });
+    expect(r).toEqual({ synced: MAX_FETCH_PER_SYNC, removed: 2, pending: 5 });
     const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, unknown>;
     expect(shard['個人學習/orphan1.md']).toBeUndefined();
     expect(shard['個人學習/orphan2.md']).toBeUndefined();
@@ -179,6 +180,98 @@ describe('reconcileSync', () => {
     const gh = mockGH({ '個人學習/a.md': '一樣' });
     const r = await reconcileSync(kv, gh);
     expect(r).toEqual({ synced: 0, removed: 0, pending: 0 });
+    expect(await kv.get('meta:index')).toBeNull();
+  });
+});
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+describe('updatedAt（內容變更時間）', () => {
+  it('reconcileSync 抓到新內容時記錄變更時間，並帶進索引', async () => {
+    const kv = mockKV();
+    const gh = mockGH({ '個人學習/a.md': '內容A' });
+    await reconcileSync(kv, gh);
+    const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['個人學習/a.md'].updatedAt!.slice(0, 10)).toBe(today());
+    const idx = (await kv.get('meta:index', 'json')) as { notes: { updatedAt: string | null }[] };
+    expect(idx.notes[0].updatedAt).toBe(today());
+  });
+
+  it('sha 沒變的筆記沿用原本的 updatedAt，只有真的變更才更新', async () => {
+    const kv = mockKV({
+      'shard:個人學習': JSON.stringify({
+        '個人學習/same.md': { content: '一樣', sha: 'sha-個人學習/same.md', updatedAt: '2026-06-05T00:00:00.000Z' },
+        '個人學習/changed.md': { content: '舊', sha: 'sha-過期', updatedAt: '2026-06-05T00:00:00.000Z' },
+      }),
+    });
+    const gh = mockGH({ '個人學習/same.md': '一樣', '個人學習/changed.md': '新' });
+    await reconcileSync(kv, gh);
+    const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['個人學習/same.md'].updatedAt).toBe('2026-06-05T00:00:00.000Z');
+    expect(shard['個人學習/changed.md'].updatedAt!.slice(0, 10)).toBe(today());
+  });
+
+  it('fullSync 整批重寫時不會把既有的 updatedAt 清掉', async () => {
+    const kv = mockKV({
+      'shard:個人學習': JSON.stringify({
+        '個人學習/a.md': { content: '內容A', sha: 'sha-個人學習/a.md', updatedAt: '2026-06-05T00:00:00.000Z' },
+      }),
+    });
+    const gh = mockGH({ '個人學習/a.md': '內容A' });
+    await fullSync(kv, gh);
+    const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['個人學習/a.md'].updatedAt).toBe('2026-06-05T00:00:00.000Z');
+  });
+});
+
+describe('backfillUpdatedAt', () => {
+  const twoNotes = {
+    'shard:個人學習': JSON.stringify({
+      '個人學習/a.md': { content: 'A', sha: 's1' },
+      '個人學習/b.md': { content: 'B', sha: 's2', updatedAt: '2026-01-01T00:00:00Z' },
+    }),
+  };
+
+  it('只補沒有 updatedAt 的筆記，值取自該檔最後一個 commit', async () => {
+    const kv = mockKV(twoNotes);
+    const gh = mockGH({ '個人學習/a.md': 'A', '個人學習/b.md': 'B' },
+      { '個人學習/a.md': '2026-09-02T08:59:47Z', '個人學習/b.md': '2026-08-01T00:00:00Z' });
+    const r = await backfillUpdatedAt(kv, gh);
+    expect(r).toEqual({ filled: 1, pending: 0 });
+    const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['個人學習/a.md'].updatedAt).toBe('2026-09-02T08:59:47Z');
+    expect(shard['個人學習/b.md'].updatedAt).toBe('2026-01-01T00:00:00Z');
+  });
+
+  it('回填後索引帶得到日期', async () => {
+    const kv = mockKV(twoNotes);
+    const gh = mockGH({}, { '個人學習/a.md': '2026-09-02T08:59:47Z' });
+    await backfillUpdatedAt(kv, gh);
+    const idx = (await kv.get('meta:index', 'json')) as { notes: { path: string; updatedAt: string | null }[] };
+    expect(idx.notes.find((n) => n.path === '個人學習/a.md')!.updatedAt).toBe('2026-09-02');
+  });
+
+  it('一次最多補到上限，其餘回報 pending', async () => {
+    const shard: Record<string, { content: string; sha: string }> = {};
+    const dates: Record<string, string> = {};
+    for (let i = 0; i < MAX_FETCH_PER_SYNC + 4; i++) {
+      shard[`個人學習/n${i}.md`] = { content: `內容${i}`, sha: `s${i}` };
+      dates[`個人學習/n${i}.md`] = '2026-09-02T08:59:47Z';
+    }
+    const kv = mockKV({ 'shard:個人學習': JSON.stringify(shard) });
+    const gh = mockGH({}, dates);
+    expect(await backfillUpdatedAt(kv, gh)).toEqual({ filled: MAX_FETCH_PER_SYNC, pending: 4 });
+    expect(await backfillUpdatedAt(kv, gh)).toEqual({ filled: 4, pending: 0 });
+  });
+
+  it('全部都有 updatedAt 時不寫入也不重建索引', async () => {
+    const kv = mockKV({
+      'shard:個人學習': JSON.stringify({
+        '個人學習/a.md': { content: 'A', sha: 's1', updatedAt: '2026-01-01T00:00:00Z' },
+      }),
+    });
+    const gh = mockGH({});
+    expect(await backfillUpdatedAt(kv, gh)).toEqual({ filled: 0, pending: 0 });
     expect(await kv.get('meta:index')).toBeNull();
   });
 });

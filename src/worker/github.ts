@@ -36,6 +36,15 @@ export class GitHub {
       .map((t) => ({ path: t.path, sha: t.sha }));
   }
 
+  // 回填「最近編輯」用：tree 與 contents API 都不帶時間，只有 commits API 有。
+  async getLastCommitDate(path: string): Promise<string | null> {
+    const res = await this.req(
+      `/commits?sha=${this.branch}&path=${encodeURIComponent(path)}&per_page=1`);
+    if (!res.ok) throw new Error(`getLastCommitDate ${path} failed: ${res.status}`);
+    const data = (await res.json()) as { commit?: { committer?: { date?: string } } }[];
+    return data[0]?.commit?.committer?.date ?? null;
+  }
+
   async getTarballBuffer(): Promise<ArrayBuffer> {
     const res = await this.req(`/tarball/${this.branch}`);
     if (!res.ok) throw new Error(`getTarball failed: ${res.status}`);

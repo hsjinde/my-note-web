@@ -72,7 +72,7 @@ describe('PUT /api/note/*', () => {
     expect(captured.message).toBe('docs: 網頁編輯「筆記A」');
     const kv = (e as { NOTES: { get: (k: string, t: string) => Promise<unknown> } }).NOTES;
     expect(await kv.get('shard:個人學習', 'json')).toEqual({
-      '個人學習/a.md': { content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1' },
+      '個人學習/a.md': { content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1', updatedAt: expect.any(String) },
     });
   });
   it('sha 衝突回 409', async () => {
@@ -110,12 +110,16 @@ describe('POST /api/quicknote', () => {
       captured = { message: body.message, content: body.content };
       return Response.json({ content: { sha: 'new1' } });
     }));
+    const e = env();
     const res = await app.request('/api/quicknote', {
       method: 'POST', body: JSON.stringify({ text: '第一個靈感' }),
       headers: { 'Content-Type': 'application/json', ...(await authedHeaders()) },
-    }, env());
+    }, e);
     expect(res.status).toBe(200);
     expect(captured.message).toBe('docs: 靈感');
+    const kv = (e as { NOTES: { get: (k: string, t: string) => Promise<unknown> } }).NOTES;
+    const shard = (await kv.get('shard:靈感', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['靈感/隨手靈感.md'].updatedAt).toEqual(expect.any(String));
     const decoded = new TextDecoder().decode(Uint8Array.from(atob(captured.content!.replace(/\n/g, '')), (ch) => ch.charCodeAt(0)));
     expect(decoded).toContain('第一個靈感');
     const body = await res.json() as { recent: string[] };
@@ -158,6 +162,31 @@ describe('POST /api/reconcile', () => {
     }, env());
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ synced: 2, removed: 0, pending: 0 });
+  });
+});
+
+describe('POST /api/backfill-dates', () => {
+  const kvInit = {
+    'shard:個人學習': JSON.stringify({ '個人學習/a.md': { content: '內容A', sha: 's1' } }),
+  };
+
+  it('未登入 401', async () => {
+    const res = await app.request('/api/backfill-dates', { method: 'POST' }, env(kvInit));
+    expect(res.status).toBe(401);
+  });
+
+  it('登入後補上缺少的內容變更時間', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () =>
+      Response.json([{ commit: { committer: { date: '2026-09-02T08:59:47Z' } } }])));
+    const e = env(kvInit);
+    const res = await app.request('/api/backfill-dates', {
+      method: 'POST', headers: await authedHeaders(),
+    }, e);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ filled: 1, pending: 0 });
+    const kv = (e as { NOTES: { get: (k: string, t: string) => Promise<unknown> } }).NOTES;
+    const shard = (await kv.get('shard:個人學習', 'json')) as Record<string, { updatedAt?: string }>;
+    expect(shard['個人學習/a.md'].updatedAt).toBe('2026-09-02T08:59:47Z');
   });
 });
 

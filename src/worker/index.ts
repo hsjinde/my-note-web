@@ -5,7 +5,7 @@ import { isPublicPath, publicIndex, parseNote } from './content';
 import type { SiteIndex } from '../shared/types';
 import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
-import { fullSync, reconcileSync, rebuildIndexFromKV, shardKey } from './sync';
+import { fullSync, reconcileSync, backfillUpdatedAt, rebuildIndexFromKV, shardKey, type Shard } from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
 import { QUICKNOTE_PATH, appendQuicknote, formatTaipeiTimestamp, recentQuicknotes } from '../shared/quicknote';
@@ -39,7 +39,7 @@ app.get('/api/index', async (c) => {
 app.get('/api/note/*', async (c) => {
   const path = notePathFromUrl(c.req.url, '/api/note/');
   if (!isPublicPath(path)) return c.json({ error: 'not found' }, 404);
-  const shard = (await c.env.NOTES.get(shardKey(path), 'json')) as Record<string, { content: string; sha: string }> | null;
+  const shard = (await c.env.NOTES.get(shardKey(path), 'json')) as Shard | null;
   const note = shard?.[path];
   if (!note) return c.json({ error: 'not found' }, 404);
   return c.json({ path, content: note.content, sha: note.sha });
@@ -80,8 +80,8 @@ app.put('/api/note/*', requireAuth, async (c) => {
   try {
     const result = await github(c.env).putFile(path, content, `docs: 網頁編輯「${title}」`, sha);
     const key = shardKey(path);
-    const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
-    shard[path] = { content, sha: result.sha };
+    const shard = ((await c.env.NOTES.get(key, 'json')) as Shard | null) ?? {};
+    shard[path] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
     await c.env.NOTES.put(key, JSON.stringify(shard));
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ sha: result.sha });
@@ -101,8 +101,8 @@ app.post('/api/quicknote', requireAuth, async (c) => {
     const content = appendQuicknote(existing?.content ?? null, trimmed, formatTaipeiTimestamp(new Date()));
     const result = await gh.putFile(QUICKNOTE_PATH, content, 'docs: 靈感', existing?.sha);
     const key = shardKey(QUICKNOTE_PATH);
-    const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
-    shard[QUICKNOTE_PATH] = { content, sha: result.sha };
+    const shard = ((await c.env.NOTES.get(key, 'json')) as Shard | null) ?? {};
+    shard[QUICKNOTE_PATH] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
     await c.env.NOTES.put(key, JSON.stringify(shard));
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ recent: recentQuicknotes(content) });
@@ -121,7 +121,7 @@ app.post('/api/note', requireAuth, async (c) => {
   if (!isPublicPath(path)) return c.json({ error: 'invalid path' }, 400);
 
   const key = shardKey(path);
-  const shard = ((await c.env.NOTES.get(key, 'json')) as Record<string, { content: string; sha: string }> | null) ?? {};
+  const shard = ((await c.env.NOTES.get(key, 'json')) as Shard | null) ?? {};
   if (shard[path]) return c.json({ error: 'already exists' }, 409);
 
   const gh = github(c.env);
@@ -130,7 +130,7 @@ app.post('/api/note', requireAuth, async (c) => {
   const content = `---\ntitle: ${t}\n---\n\n`;
   try {
     const result = await gh.putFile(path, content, `docs: 新增「${t}」`);
-    shard[path] = { content, sha: result.sha };
+    shard[path] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
     await c.env.NOTES.put(key, JSON.stringify(shard));
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ path, sha: result.sha });
@@ -148,6 +148,11 @@ app.post('/api/sync', requireAuth, async (c) => {
 // 的 CPU 上限；對帳同步分批進行，重複打就能把落後的內容逐步補齊。
 app.post('/api/reconcile', requireAuth, async (c) => {
   return c.json(await reconcileSync(c.env.NOTES, github(c.env)));
+});
+
+// 一次性回填舊筆記的「最近編輯」日期，補完（pending 為 0）之後就用不到了。
+app.post('/api/backfill-dates', requireAuth, async (c) => {
+  return c.json(await backfillUpdatedAt(c.env.NOTES, github(c.env)));
 });
 
 app.post('/api/webhook', async (c) => {

@@ -93,7 +93,7 @@ describe('POST /api/note', () => {
     expect(decoded).toBe('---\ntitle: 新筆記\n---\n\n');
     const kv = (e as { NOTES: { get: (k: string, t: string) => Promise<unknown> } }).NOTES;
     expect(await kv.get('shard:個人學習', 'json')).toEqual({
-      '個人學習/新筆記.md': { content: '---\ntitle: 新筆記\n---\n\n', sha: 'new1' },
+      '個人學習/新筆記.md': { content: '---\ntitle: 新筆記\n---\n\n', sha: 'new1', updatedAt: expect.any(String) },
     });
     const idx = await kv.get('meta:index', 'json') as { notes: { path: string }[] };
     expect(idx.notes.some((n) => n.path === '個人學習/新筆記.md')).toBe(true);

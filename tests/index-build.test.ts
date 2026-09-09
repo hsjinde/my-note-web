@@ -25,3 +25,25 @@ describe('publicIndex', () => {
     expect(a.linksTo).toEqual(['好工具推薦/b.md']);
   });
 });
+
+describe('buildIndex 的 updatedAt', () => {
+  it('帶入 KV 記錄的內容變更時間，取到日期', () => {
+    const idx = buildIndex([
+      { path: '好工具推薦/a.md', content: '內容A', updatedAt: '2026-09-02T08:59:47.000Z' },
+      { path: '好工具推薦/b.md', content: '內容B' },
+    ]);
+    expect(idx.notes.find((n) => n.path === '好工具推薦/a.md')!.updatedAt).toBe('2026-09-02');
+    expect(idx.notes.find((n) => n.path === '好工具推薦/b.md')!.updatedAt).toBeNull();
+  });
+
+  it('updatedAt 與 frontmatter date 各自獨立，不互相覆蓋', () => {
+    const withFm = `---
+title: A
+date: 2026-06-01
+---
+內容`;
+    const idx = buildIndex([{ path: '好工具推薦/a.md', content: withFm, updatedAt: '2026-09-02T08:59:47.000Z' }]);
+    expect(idx.notes[0].date).toBe('2026-06-01');
+    expect(idx.notes[0].updatedAt).toBe('2026-09-02');
+  });
+});

@@ -28,6 +28,20 @@ describe('GitHub client', () => {
     await expect(gh().listMarkdownEntries()).rejects.toThrow(/truncated/);
   });
 
+  it('getLastCommitDate 取該檔最後一個 commit 的時間', async () => {
+    stubFetch((url) => {
+      const u = decodeURIComponent(String(url));
+      expect(u).toContain('/commits?sha=main&path=個人學習/a.md&per_page=1');
+      return Response.json([{ commit: { committer: { date: '2026-09-02T08:59:47Z' } } }]);
+    });
+    expect(await gh().getLastCommitDate('個人學習/a.md')).toBe('2026-09-02T08:59:47Z');
+  });
+
+  it('getLastCommitDate 查不到 commit 時回 null', async () => {
+    stubFetch(() => Response.json([]));
+    expect(await gh().getLastCommitDate('個人學習/ghost.md')).toBeNull();
+  });
+
   it('getTarballBuffer 打 tarball endpoint 並回 ArrayBuffer', async () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
     stubFetch((url) => {

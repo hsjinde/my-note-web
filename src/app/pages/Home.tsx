@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import type { SiteIndex } from '../../shared/types';
+import { noteDate } from '../noteDate';
 
 export default function Home({ index }: { index: SiteIndex }) {
   const [sort, setSort] = useState<'recent' | 'name'>('recent');
   const notes = useMemo(() => [...index.notes].sort((a, b) => sort === 'recent'
-    ? (b.date ?? '').localeCompare(a.date ?? '')
+    ? noteDate(b).localeCompare(noteDate(a))
     : a.title.localeCompare(b.title, 'zh-Hant')), [index, sort]);
   const pill = (active: boolean) => ({
     fontSize: 12.5, padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
@@ -28,7 +29,7 @@ export default function Home({ index }: { index: SiteIndex }) {
           <a key={n.path} className="btn-reset" href={`#/note/${encodeURIComponent(n.path)}`}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, padding: '10px 2px', borderBottom: '1px solid var(--ls)' }}>
             <span style={{ fontSize: 15.5, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</span>
-            <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)', whiteSpace: 'nowrap' }}>{n.date ?? ''}</span>
+            <span style={{ font: "12.5px 'IBM Plex Mono',monospace", color: 'var(--mu)', whiteSpace: 'nowrap' }}>{noteDate(n)}</span>
           </a>
         ))}
       </div>

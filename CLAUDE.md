@@ -37,17 +37,24 @@ npm run deploy                       # build + wrangler deploy —— 直接上�
 my-note push → /api/webhook（驗簽＋比對分支）→ reconcileSync：tree 全量 sha 對帳，只抓有差異的
 登入後 POST /api/sync            → fullSync：tree API 取 sha + tarball 取全文，整批重寫
 登入後 POST /api/reconcile       → reconcileSync：同 webhook 那條，分批補齊落後的內容
+登入後 POST /api/backfill-dates  → backfillUpdatedAt：一次性補舊筆記的 updatedAt（分批）
 網頁編輯 PUT /api/note/*         → GitHub putFile（帶 sha，衝突回 409）→ 更新 KV → 重建索引
 ```
 
 KV（binding `NOTES`）只有兩類 key：
 
-- `shard:<頂層資料夾>` → `Record<path, { content, sha }>`——每個頂層資料夾一個 shard（見 sync.ts 的 `shardKey`），存筆記原文與 GitHub blob sha。
+- `shard:<頂層資料夾>` → `Record<path, { content, sha, updatedAt? }>`——每個頂層資料夾一個 shard（見 sync.ts 的 `shardKey`），存筆記原文、GitHub blob sha，以及內容最後變更時間。
 - `meta:index` → `SiteIndex`——由全部 shard 重建（`rebuildIndexFromKV`），含 title/tags/excerpt/wikilink 解析（content.ts 的 `buildIndex`）。
 
-webhook 走的是**對帳**而不是增量：`reconcileSync` 不看 push payload，改用 `listMarkdownEntries()` 拿 tree 上的完整 blob sha 清單跟 KV 比對，只抓 sha 不同或缺少的檔案，並移除 tree 上已不存在的。這是刻意的——只信任 payload 的話，webhook 漏送一次那些檔案就永久漏掉（2026-09 曾因此累積 117 篇缺漏、55 篇過期）。單次對帳最多抓 `MAX_FETCH_PER_RECONCILE`（40）個檔案以免超過 Workers 的 subrequest 上限，其餘由 `pending` 回報並留給下一次 push。相對地 `listMarkdownEntries()` 在 tree 被截斷時會丟錯，避免拿半套清單去比對而誤刪整批筆記。
+webhook 走的是**對帳**而不是增量：`reconcileSync` 不看 push payload，改用 `listMarkdownEntries()` 拿 tree 上的完整 blob sha 清單跟 KV 比對，只抓 sha 不同或缺少的檔案，並移除 tree 上已不存在的。這是刻意的——只信任 payload 的話，webhook 漏送一次那些檔案就永久漏掉（2026-09 曾因此累積 117 篇缺漏、55 篇過期）。單次對帳最多抓 `MAX_FETCH_PER_SYNC`（40）個檔案以免超過 Workers 的 subrequest 上限，其餘由 `pending` 回報並留給下一次 push。相對地 `listMarkdownEntries()` 在 tree 被截斷時會丟錯，避免拿半套清單去比對而誤刪整批筆記。
 
 **任何寫入 KV 筆記內容的路徑（編輯、新增、quicknote、同步）都必須跟著重建索引**，現有 handler 都遵守這個慣例。
+
+### 「最近編輯」的日期
+
+`NoteMeta` 有兩個日期，語意不同不要混用：`date` 是筆記自己 frontmatter 寫的（`date`/`updated`，只有約 6% 的筆記有），`updatedAt` 是 KV 記錄的內容實際變更時間。首頁排序與列表顯示走 [noteDate()](src/app/noteDate.ts)（`updatedAt ?? date`），文章頁仍顯示 frontmatter 的 `date`。
+
+`updatedAt` 由三處維護：對帳同步偵測到 sha 變化時、網頁編輯／新增／速記寫入時、以及 `backfillUpdatedAt` 用 commits API 回填舊資料時。**`fullSync` 整批重寫時必須沿用 sha 未變筆記的 `updatedAt`**，否則跑一次就會把全站的「最近編輯」重設成今天。
 
 ### 公開／私有邊界（最重要的不變量）
 

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { noteDate } from '../noteDate';
 import type { SiteIndex } from '../../shared/types';
 
 export default function TagPage({ tag, index }: { tag: string; index: SiteIndex }) {
@@ -35,7 +36,7 @@ export default function TagPage({ tag, index }: { tag: string; index: SiteIndex 
             style={{ background: 'var(--pn)', border: '1px solid var(--ln)', borderRadius: 10, padding: '18px 22px', cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ font: "600 17px 'Noto Serif TC',serif", color: 'var(--hd)' }}>{n.title}</span>
-              <span style={{ font: "12px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{n.date ?? ''}</span>
+              <span style={{ font: "12px 'IBM Plex Mono',monospace", color: 'var(--mu)' }}>{noteDate(n)}</span>
             </div>
             <div style={{ fontSize: 13.5, lineHeight: 1.9, marginTop: 6 }}>{n.excerpt.slice(0, 80)}…</div>
           </div>

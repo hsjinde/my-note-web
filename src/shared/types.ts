@@ -4,6 +4,7 @@ export interface NoteMeta {
   folder: string; // 完整資料夾路徑（不含檔名），如 '個人學習/LeetCode'
   tags: string[];
   date: string | null; // frontmatter date/updated，'YYYY-MM-DD'
+  updatedAt: string | null; // 內容實際最後變更日期（由 KV 記錄，非筆記內文），'YYYY-MM-DD'
   excerpt: string; // 去 frontmatter/markdown 符號後前 160 字
   links: string[]; // 原始 wikilink 目標字串
   linksTo: string[]; // 解析成功的站內 path
