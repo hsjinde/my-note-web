@@ -50,6 +50,41 @@ describe('renderMarkdown', () => {
     expect(noLang.html).toContain('<div class="code-block">');
     expect(noLang.html).not.toContain('data-lang');
   });
+  it('標了語言的區塊會上色，token 包成 hljs class', () => {
+    const { html } = renderMarkdown('```python\ndef f(x):\n    return "ok"  # 註解\n```', resolve);
+    expect(html).toContain('<div class="code-block" data-lang="python">');
+    expect(html).toContain('hljs-keyword');
+    expect(html).toContain('hljs-string');
+    expect(html).toContain('hljs-comment');
+  });
+  it('fence info 的雜訊尾綴（python!／pyhon=）正規化後照樣上色', () => {
+    for (const info of ['python!', 'python=', 'pyhon=']) {
+      const { html } = renderMarkdown(`\`\`\`${info}\nimport os\n\`\`\``, resolve);
+      expect(html).toContain('hljs-keyword');
+    }
+    // 標籤照抄筆記寫的（去掉雜訊尾綴），不會被改寫成別名的全名
+    expect(renderMarkdown('```python!\nimport os\n```', resolve).html).toContain('data-lang="python"');
+    const short = renderMarkdown('```PY\nimport os\n```', resolve).html;
+    expect(short).toContain('data-lang="py"');
+    expect(short).toContain('hljs-keyword');
+  });
+  it('不認得的語言（mermaid）保留標籤但不上色，內容照常 escape', () => {
+    const { html } = renderMarkdown('```mermaid\ngraph TD; A-->B & <x>\n```', resolve);
+    expect(html).toContain('data-lang="mermaid"');
+    expect(html).not.toContain('hljs-');
+    expect(html).toContain('&lt;x&gt;');
+  });
+  it('沒標語言：像程式碼的會自動上色，純文字維持原樣', () => {
+    const code = renderMarkdown(
+      '```\nclass Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n'
+      + '        return sorted(s) == sorted(t)\n```',
+      resolve,
+    );
+    expect(code.html).toContain('hljs-');
+    expect(code.html).not.toContain('data-lang');
+    const prose = renderMarkdown('```\n這是一段純文字說明，不是程式碼。\n```', resolve);
+    expect(prose.html).not.toContain('hljs-');
+  });
   it('fence info 夾帶 HTML 時不會注入標記', () => {
     const { html } = renderMarkdown('```"><img src=x onerror=alert(1)>\nx\n```', resolve);
     expect(html).toContain('<div class="code-block">');

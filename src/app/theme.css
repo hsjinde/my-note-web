@@ -1,5 +1,5 @@
-:root{--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,'Noto Sans TC',monospace;--bg:#fbf7ef;--pn:#fff;--ln:#e4d9c6;--ls:#f1ead9;--tx:#5a4f3e;--hd:#3a3226;--mu:#c2b39a;--m2:#7a6d58;--ac:#c26b3e;--ab:rgba(194,107,62,.10);--a2:#d9a06b;--qb:rgba(194,107,62,.06);--cb:#f4eee1;--ci:#efe7d4;--rw:rgba(228,217,198,.25);--hl:#f6d36b88}
-[data-dark="true"]{--bg:#1c1917;--pn:#262220;--ln:#38322d;--ls:#2a2622;--tx:#d9d2c7;--hd:#f2ece1;--mu:#8d8375;--m2:#a89c8a;--ac:#ec9566;--ab:rgba(236,149,102,.13);--a2:#b06a42;--qb:rgba(236,149,102,.07);--cb:#161311;--ci:#38322d;--rw:rgba(56,50,45,.35);--hl:rgba(246,211,107,.28)}
+:root{--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,'Noto Sans TC',monospace;--bg:#fbf7ef;--pn:#fff;--ln:#e4d9c6;--ls:#f1ead9;--tx:#5a4f3e;--hd:#3a3226;--mu:#c2b39a;--m2:#7a6d58;--ac:#c26b3e;--ab:rgba(194,107,62,.10);--a2:#d9a06b;--qb:rgba(194,107,62,.06);--cb:#f4eee1;--ci:#efe7d4;--sy-cm:#736a59;--sy-kw:#8c5570;--sy-st:#5a6f40;--sy-nu:#8a6224;--sy-fn:#42697a;--rw:rgba(228,217,198,.25);--hl:#f6d36b88}
+[data-dark="true"]{--bg:#1c1917;--pn:#262220;--ln:#38322d;--ls:#2a2622;--tx:#d9d2c7;--hd:#f2ece1;--mu:#8d8375;--m2:#a89c8a;--ac:#ec9566;--ab:rgba(236,149,102,.13);--a2:#b06a42;--qb:rgba(236,149,102,.07);--cb:#161311;--ci:#38322d;--sy-cm:#8d8375;--sy-kw:#c892a6;--sy-st:#9ab379;--sy-nu:#c8a569;--sy-fn:#7fa9b8;--rw:rgba(56,50,45,.35);--hl:rgba(246,211,107,.28)}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Noto Sans TC',system-ui,sans-serif}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
@@ -20,6 +20,16 @@ a{color:var(--ac)}a:hover{color:var(--a2)}
 .md-body pre{background:var(--cb);border:1px solid var(--ln);border-radius:10px;padding:16px 18px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--ln) transparent;tab-size:4}
 /* 區塊內要壓回 .md-body code 的換行設定，否則長行會被折斷而不是捲動 */
 .md-body pre code{background:none;padding:0;border-radius:0;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:var(--tx);white-space:pre;overflow-wrap:normal;word-break:normal}
+/* 語法上色：highlight.js 的 token class 對應到五個低飽和色票（亮暗各一版），
+   刻意不用書籤橘 --ac——它要留給「可互動」。未上色的 token 維持 --tx。 */
+.md-body .hljs-comment,.md-body .hljs-quote{color:var(--sy-cm)}
+.md-body .hljs-meta{color:var(--sy-cm)}
+.md-body .hljs-keyword,.md-body .hljs-selector-tag,.md-body .hljs-literal,.md-body .hljs-type,.md-body .hljs-operator,.md-body .hljs-doctag,.md-body .hljs-meta .hljs-keyword{color:var(--sy-kw)}
+.md-body .hljs-string,.md-body .hljs-regexp,.md-body .hljs-addition,.md-body .hljs-meta .hljs-string{color:var(--sy-st)}
+.md-body .hljs-number,.md-body .hljs-symbol,.md-body .hljs-bullet,.md-body .hljs-template-variable,.md-body .hljs-variable.constant_{color:var(--sy-nu)}
+.md-body .hljs-title,.md-body .hljs-title.function_,.md-body .hljs-title.class_,.md-body .hljs-built_in,.md-body .hljs-section,.md-body .hljs-name,.md-body .hljs-attr,.md-body .hljs-attribute,.md-body .hljs-selector-id,.md-body .hljs-selector-class{color:var(--sy-fn)}
+.md-body .hljs-emphasis{font-style:italic}
+.md-body .hljs-strong{font-weight:500}
 .md-body blockquote{border-left:3px solid var(--a2);background:var(--qb);border-radius:0 8px 8px 0;padding:14px 18px;margin:0 0 30px}
 .md-body blockquote p{margin:0}
 .md-body table{width:100%;border-collapse:collapse;font-size:14.5px;margin-bottom:34px}

@@ -1,15 +1,19 @@
 import MarkdownIt from 'markdown-it';
+import { highlightCode, normalizeLang } from './highlight';
 
-const md = new MarkdownIt({ html: false, linkify: true, breaks: false });
+const md = new MarkdownIt({
+  html: false, linkify: true, breaks: false,
+  // 回空字串時 markdown-it 會自己 escape，所以未上色的區塊照舊安全。
+  highlight: (code, info) => highlightCode(code, info),
+});
 
 // 把 fence 包一層 wrapper，語言標籤掛在 wrapper 的 data-lang 上（放進 pre 裡會
 // 跟著 overflow-x 一起捲走）。自訂 renderer 繞過 html:false，所以 lang 先過白名單
-// 再 escape。
+// 再 escape。猜出來的語言不標，標籤只反映筆記自己寫了什麼。
 const defaultFence = md.renderer.rules.fence!;
 md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const pre = defaultFence(tokens, idx, options, env, self);
-  const raw = tokens[idx].info.trim().split(/\s+/)[0] ?? '';
-  const lang = /^[\w+#.-]{1,20}$/.test(raw) ? md.utils.escapeHtml(raw.toLowerCase()) : '';
+  const lang = md.utils.escapeHtml(normalizeLang(tokens[idx].info));
   const attr = lang ? ` data-lang="${lang}"` : '';
   return `<div class="code-block"${attr}>${pre}</div>\n`;
 };

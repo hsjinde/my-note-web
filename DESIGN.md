@@ -127,9 +127,18 @@ components:
 - **實線 / 虛線 Line Strong / Soft** (#e4d9c6 / #f1ead9，token `--ln` / `--ls`)：分隔一切的 1px 細線；Strong 用於邊框，Soft 用於列表列分隔。
 - **碼塊 / 行內碼底 Code Block / Inline** (#f4eee1 / #efe7d4，token `--cb` / `--ci`)。
 
+### Syntax（語法上色專用）
+
+- **註解 Comment** (#736a59 / 暗色 #8d8375，token `--sy-cm`)
+- **關鍵字 Keyword** (#8c5570 / 暗色 #c892a6，token `--sy-kw`)：關鍵字、運算子、型別、literal。
+- **字串 String** (#5a6f40 / 暗色 #9ab379，token `--sy-st`)：字串與正則。
+- **數值 Number** (#8a6224 / 暗色 #c8a569，token `--sy-nu`)：數值、符號、常數。
+- **函式／類別 Function** (#42697a / 暗色 #7fa9b8，token `--sy-fn`)：函式名、類別名、built-in、標籤名與屬性鍵。
+
 ### Named Rules
 **書籤規則（The Bookmark Rule）。** 書籤橘在任何畫面的覆蓋率 ≤10%。它只標記「可互動」與「目前位置」，永不作裝飾。
 **變數優先規則（The Token Rule）。** 任何新顏色一律先問「哪個現有變數可以用」；直接寫死 hex 是禁止的，新增變數需同時提供亮暗兩版。
+**語法上色例外（The Syntax Palette Exception）。** 「唯一的彩度留給書籤橘」有且只有這一個例外：`--sy-*` 五個色票。它們只能出現在 `.md-body pre` 內的程式碼 token 上（由 highlight.js 的 class 對應，見 [src/app/highlight.ts](src/app/highlight.ts)），不得外流到 UI、圖表或任何其他元件；五個色相一律低飽和，且在 `--cb` 上亮暗兩版都量過對比 ≥4.5:1；上色永遠不准用 `--ac`——書籤橘在程式碼區塊裡仍然只代表「可互動」。沒標語言、或標了但不認得的區塊維持 `--tx` 純色，不猜著上色。
 
 ## 3. Typography
 
