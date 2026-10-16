@@ -7,7 +7,7 @@ import { createSession, verifySession, SESSION_MAX_AGE } from './auth';
 import { verifyGithubSignature } from './webhook';
 import {
   fullSync, reconcileSync, backfillUpdatedAt, rebuildIndexFromKV, shardKey,
-  MAX_FETCH_PER_SYNC, type Shard,
+  readNote, writeNote, migrateShardsToNotes, MAX_FETCH_PER_SYNC, type Shard,
 } from './sync';
 import { GitHub, ShaConflictError } from './github';
 import { ask } from './ask';
@@ -42,9 +42,15 @@ app.get('/api/index', async (c) => {
 app.get('/api/note/*', async (c) => {
   const path = notePathFromUrl(c.req.url, '/api/note/');
   if (!isPublicPath(path)) return c.json({ error: 'not found' }, 404);
-  const shard = (await c.env.NOTES.get(shardKey(path), 'json')) as Shard | null;
-  const note = shard?.[path];
+  const { note, fromShard } = await readNote(c.env.NOTES, path);
   if (!note) return c.json({ error: 'not found' }, 404);
+  // 還沒搬家的筆記：這次是硬 parse 了整個 shard 才讀到的，順手補上 note: key，
+  // 下一次就不必再碰那包大的。寫入不擋回應。
+  if (fromShard) {
+    const backfill = writeNote(c.env.NOTES, path, note);
+    // 沒有 ExecutionContext 的情境（測試）就直接等它寫完。
+    try { c.executionCtx.waitUntil(backfill); } catch { await backfill; }
+  }
   return c.json({ path, content: note.content, sha: note.sha });
 });
 
@@ -84,8 +90,10 @@ app.put('/api/note/*', requireAuth, async (c) => {
     const result = await github(c.env).putFile(path, content, `docs: 網頁編輯「${title}」`, sha);
     const key = shardKey(path);
     const shard = ((await c.env.NOTES.get(key, 'json')) as Shard | null) ?? {};
-    shard[path] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    const note = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    shard[path] = note;
     await c.env.NOTES.put(key, JSON.stringify(shard));
+    await writeNote(c.env.NOTES, path, note);
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ sha: result.sha });
   } catch (e) {
@@ -105,8 +113,10 @@ app.post('/api/quicknote', requireAuth, async (c) => {
     const result = await gh.putFile(QUICKNOTE_PATH, content, 'docs: 靈感', existing?.sha);
     const key = shardKey(QUICKNOTE_PATH);
     const shard = ((await c.env.NOTES.get(key, 'json')) as Shard | null) ?? {};
-    shard[QUICKNOTE_PATH] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    const note = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    shard[QUICKNOTE_PATH] = note;
     await c.env.NOTES.put(key, JSON.stringify(shard));
+    await writeNote(c.env.NOTES, QUICKNOTE_PATH, note);
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ recent: recentQuicknotes(content) });
   } catch (e) {
@@ -133,8 +143,10 @@ app.post('/api/note', requireAuth, async (c) => {
   const content = `---\ntitle: ${t}\n---\n\n`;
   try {
     const result = await gh.putFile(path, content, `docs: 新增「${t}」`);
-    shard[path] = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    const note = { content, sha: result.sha, updatedAt: new Date().toISOString() };
+    shard[path] = note;
     await c.env.NOTES.put(key, JSON.stringify(shard));
+    await writeNote(c.env.NOTES, path, note);
     await rebuildIndexFromKV(c.env.NOTES);
     return c.json({ path, sha: result.sha });
   } catch (e) {
@@ -151,6 +163,11 @@ app.post('/api/sync', requireAuth, async (c) => {
 // 的 CPU 上限；對帳同步分批進行，重複打就能把落後的內容逐步補齊。
 app.post('/api/reconcile', requireAuth, async (c) => {
   return c.json(await reconcileSync(c.env.NOTES, github(c.env)));
+});
+
+// 一次性把舊 shard 拆成一篇一個 note: key（done 為 true 代表搬完了）。
+app.post('/api/migrate-notes', requireAuth, async (c) => {
+  return c.json(await migrateShardsToNotes(c.env.NOTES));
 });
 
 // 一次性回填舊筆記的「最近編輯」日期，補完（pending 為 0）之後就用不到了。
@@ -184,7 +201,8 @@ export default {
   async scheduled(_event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
     const gh = github(env);
     const { synced } = await reconcileSync(env.NOTES, gh);
-    const budget = MAX_FETCH_PER_SYNC - synced;
+    let budget = MAX_FETCH_PER_SYNC - synced;
+    if (budget > 0) budget -= (await migrateShardsToNotes(env.NOTES, budget)).migrated;
     if (budget > 0) await backfillUpdatedAt(env.NOTES, gh, budget);
   },
 };

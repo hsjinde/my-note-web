@@ -75,6 +75,17 @@ describe('fullSync', () => {
     expect(await kv.get('shard:日常')).toBeNull();
     const idx = (await kv.get('meta:index', 'json')) as { notes: { path: string }[] };
     expect(idx.notes.map((n) => n.path).sort()).toEqual(['wiki/k.md', '個人學習/a.md']);
+    // 讀取路徑走 note: key，整批重寫時也要一起換掉
+    expect(await kv.get('note:個人學習/a.md', 'json')).toEqual({
+      content: '---\ntitle: A\n---\n內容A', sha: 'sha-個人學習/a.md', updatedAt: expect.any(String),
+    });
+  });
+
+  it('整批重寫會清掉已不存在筆記的 note: key', async () => {
+    const kv = mockKV({ 'note:個人學習/gone.md': JSON.stringify({ content: '舊', sha: 's' }) });
+    await fullSync(kv, mockGH({ '個人學習/a.md': '內容' }));
+    expect(await kv.get('note:個人學習/gone.md')).toBeNull();
+    expect(await kv.get('note:個人學習/a.md')).not.toBeNull();
   });
 
   it('重新同步時清除已不存在資料夾的舊 shard', async () => {

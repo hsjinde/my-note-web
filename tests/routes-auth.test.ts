@@ -74,6 +74,10 @@ describe('PUT /api/note/*', () => {
     expect(await kv.get('shard:個人學習', 'json')).toEqual({
       '個人學習/a.md': { content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1', updatedAt: expect.any(String) },
     });
+    // 讀取路徑走的是 note: key，編輯後也要跟著更新，否則文章頁會一直餵出舊內容
+    expect(await kv.get('note:個人學習/a.md', 'json')).toEqual({
+      content: '---\ntitle: 筆記A\n---\n新內容', sha: 'new1', updatedAt: expect.any(String),
+    });
   });
   it('sha 衝突回 409', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('conflict', { status: 409 })));

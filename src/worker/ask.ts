@@ -1,5 +1,5 @@
 import type { NoteMeta, SiteIndex } from '../shared/types';
-import { shardKey } from './sync';
+import { readNote } from './sync';
 
 export function tokenize(q: string): string[] {
   const tokens: string[] = [];
@@ -40,8 +40,7 @@ export async function ask(
   const top = scoreNotes(index, question);
   const sections: string[] = [];
   for (const n of top) {
-    const shard = (await env.NOTES.get(shardKey(n.path), 'json')) as Record<string, { content: string }> | null;
-    const note = shard?.[n.path];
+    const { note } = await readNote(env.NOTES, n.path);
     if (note) sections.push(`【${n.title}】（${n.path}）\n${note.content.slice(0, 6000)}`);
   }
   const system =

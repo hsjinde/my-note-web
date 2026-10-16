@@ -28,7 +28,7 @@ npm run deploy                       # build + wrangler deploy —— 直接上�
 單一 Cloudflare Worker（[src/worker/index.ts](src/worker/index.ts)，Hono）同時服務 `dist/` 的 SPA 靜態資產與所有 `/api/*` 路由。原始碼分三區：
 
 - `src/worker/` — Worker 端：路由（index.ts）、同步（sync.ts + tarball.ts）、內容解析與索引（content.ts）、GitHub Contents API（github.ts）、session 認證（auth.ts）、webhook 簽章驗證（webhook.ts）、AI 問答（ask.ts）。
-- `src/app/` — React SPA：hash routing（router.ts，`#/note/<path>`、`#/tag/<tag>`、`#/db`，無 router 套件）、API client（api.ts）、markdown 渲染（markdown.ts，markdown-it + wikilink）、pages/ 與 components/。
+- `src/app/` — React SPA：hash routing（router.ts，`#/note/<path>`、`#/tag/<tag>`、`#/db`，無 router 套件）、API client（api.ts）、markdown 渲染（markdown.ts，markdown-it + wikilink）、語法上色（highlight.ts，只註冊用得到的語言＋沒標語言時的自動偵測）、pages/ 與 components/。
 - `src/shared/` — 前後端共用：`folders.ts`（`PUBLIC_FOLDERS` 白名單唯一定義處）、`types.ts`（`NoteMeta`/`SiteIndex`）、`quicknote.ts`（靈感速記格式）。
 
 ### 資料流與 KV 資料模型
@@ -38,14 +38,19 @@ my-note push → /api/webhook（驗簽＋比對分支）→ reconcileSync：tree
 登入後 POST /api/sync            → fullSync：tree API 取 sha + tarball 取全文，整批重寫
 登入後 POST /api/reconcile       → reconcileSync：同 webhook 那條，分批補齊落後的內容
 登入後 POST /api/backfill-dates  → backfillUpdatedAt：一次性補舊筆記的 updatedAt（分批）
-每小時 Cron Trigger              → scheduled：先 reconcileSync，再用剩下的抓取預算跑 backfillUpdatedAt
+登入後 POST /api/migrate-notes   → migrateShardsToNotes：把舊 shard 拆成一篇一個 note: key（分批）
+每小時 Cron Trigger              → scheduled：reconcileSync → migrateShardsToNotes → backfillUpdatedAt（共用抓取預算）
 網頁編輯 PUT /api/note/*         → GitHub putFile（帶 sha，衝突回 409）→ 更新 KV → 重建索引
 ```
 
-KV（binding `NOTES`）只有兩類 key：
+KV（binding `NOTES`）有三類 key：
 
-- `shard:<頂層資料夾>` → `Record<path, { content, sha, updatedAt? }>`——每個頂層資料夾一個 shard（見 sync.ts 的 `shardKey`），存筆記原文、GitHub blob sha，以及內容最後變更時間。
+- `note:<path>` → `{ content, sha, updatedAt? }`——**單篇讀取（`/api/note/*`、AI 問答）只走這裡**。
+- `shard:<頂層資料夾>` → `Record<path, { content, sha, updatedAt? }>`——每個頂層資料夾一包全文（見 sync.ts 的 `shardKey`），同步與索引重建用。
 - `meta:index` → `SiteIndex`——由全部 shard 重建（`rebuildIndexFromKV`），含 title/tags/excerpt/wikilink 解析（content.ts 的 `buildIndex`）。
+- （`meta:note-keys` 是 shard → `note:` 的一次性搬遷進度，搬完後 `done` 為 true。）
+
+**為什麼要有 `note:`**：原本讀一篇筆記是 `KV.get(shard:<頂層資料夾>, 'json')`，等於把整個資料夾的全文 parse 一次。`個人學習` 那包大到會撞上 Workers 的資源上限（免費方案 10ms CPU／128MB），2026-10-16 線上有超過一半的筆記回 503（`error code: 1102`）。所以讀取路徑改成一篇一個小 key。**任何寫入筆記內容的地方都要同時更新 `note:` key**（編輯、新增、quicknote、`reconcileSync`、`fullSync`），只寫 shard 會讓文章頁永遠餵出舊內容；刪除筆記時兩邊都要刪。`readNote()` 在 `note:` key 不存在時仍會退回 shard，並順手把 key 補寫回去，所以搬遷期間不會有讀不到的筆記。
 
 Worker 的 default export 是 `{ fetch, scheduled }`（測試 import 具名的 `app`）。`scheduled` 每小時跑一次，是 webhook 的保險：webhook 若失效不會有任何警訊，靠排程照樣會把內容補齊。它與 `backfillUpdatedAt` 共用 `MAX_FETCH_PER_SYNC` 的抓取預算，避免單次 request 的 subrequest 超限。
 
