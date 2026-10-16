@@ -42,6 +42,20 @@ describe('renderMarkdown', () => {
     expect(html).toContain(`href="#/note/${encodeURIComponent('好工具推薦/b.md')}"`);
     expect(html).not.toContain('undefined');
   });
+  it('fenced 區塊包上 code-block wrapper，有語言才掛 data-lang', () => {
+    const withLang = renderMarkdown('```ts\nconst a = 1;\n```', resolve);
+    expect(withLang.html).toContain('<div class="code-block" data-lang="ts">');
+    expect(withLang.html).toContain('class="language-ts"');
+    const noLang = renderMarkdown('```\nplain\n```', resolve);
+    expect(noLang.html).toContain('<div class="code-block">');
+    expect(noLang.html).not.toContain('data-lang');
+  });
+  it('fence info 夾帶 HTML 時不會注入標記', () => {
+    const { html } = renderMarkdown('```"><img src=x onerror=alert(1)>\nx\n```', resolve);
+    expect(html).toContain('<div class="code-block">');
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('onerror');
+  });
   it('程式碼區塊/行內碼內的 [[wikilink]] 保持原字，不被轉成連結', () => {
     const inline = renderMarkdown('用 `[[語法]]` 表示連結，真的連結是 [[筆記B]]', resolve);
     expect(inline.html).toContain('<code>[[語法]]</code>');

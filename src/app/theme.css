@@ -1,4 +1,4 @@
-:root{--bg:#fbf7ef;--pn:#fff;--ln:#e4d9c6;--ls:#f1ead9;--tx:#5a4f3e;--hd:#3a3226;--mu:#c2b39a;--m2:#7a6d58;--ac:#c26b3e;--ab:rgba(194,107,62,.10);--a2:#d9a06b;--qb:rgba(194,107,62,.06);--cb:#f4eee1;--ci:#efe7d4;--rw:rgba(228,217,198,.25);--hl:#f6d36b88}
+:root{--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,'Noto Sans TC',monospace;--bg:#fbf7ef;--pn:#fff;--ln:#e4d9c6;--ls:#f1ead9;--tx:#5a4f3e;--hd:#3a3226;--mu:#c2b39a;--m2:#7a6d58;--ac:#c26b3e;--ab:rgba(194,107,62,.10);--a2:#d9a06b;--qb:rgba(194,107,62,.06);--cb:#f4eee1;--ci:#efe7d4;--rw:rgba(228,217,198,.25);--hl:#f6d36b88}
 [data-dark="true"]{--bg:#1c1917;--pn:#262220;--ln:#38322d;--ls:#2a2622;--tx:#d9d2c7;--hd:#f2ece1;--mu:#8d8375;--m2:#a89c8a;--ac:#ec9566;--ab:rgba(236,149,102,.13);--a2:#b06a42;--qb:rgba(236,149,102,.07);--cb:#161311;--ci:#38322d;--rw:rgba(56,50,45,.35);--hl:rgba(246,211,107,.28)}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Noto Sans TC',system-ui,sans-serif}
@@ -9,9 +9,17 @@ a{color:var(--ac)}a:hover{color:var(--a2)}
 .md-body h1,.md-body h2,.md-body h3{font-family:'Noto Serif TC',serif;color:var(--hd)}
 .md-body h2{font-size:24px;font-weight:600;margin:34px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--ln)}
 .md-body h3{font-size:18px;font-weight:600;margin:24px 0 12px}
-.md-body code{font:13.5px 'IBM Plex Mono',monospace;background:var(--ci);border-radius:4px;padding:1px 6px;color:var(--hd)}
-.md-body pre{background:var(--cb);border:1px solid var(--ln);border-radius:10px;padding:16px 18px;overflow-x:auto}
-.md-body pre code{background:none;padding:0;font:13.5px/1.75 'IBM Plex Mono',monospace;color:var(--tx)}
+/* 行內碼：字級隨容器縮放（標題／表格內也合比例），長路徑可斷行 */
+.md-body code{font-family:var(--mono);font-size:.88em;font-weight:400;font-style:normal;background:var(--ci);border-radius:4px;padding:1px 6px;color:var(--hd);overflow-wrap:anywhere}
+/* 程式碼區塊：外層 wrapper 吃邊距與語言標籤，pre 自己只負責捲動 */
+.md-body .code-block{margin:24px 0}
+.md-body .code-block pre{margin:0}
+.md-body .code-block[data-lang]{position:relative}
+.md-body .code-block[data-lang]::before{content:attr(data-lang);position:absolute;top:10px;right:16px;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mu);pointer-events:none}
+.md-body .code-block[data-lang] pre{padding-top:34px}
+.md-body pre{background:var(--cb);border:1px solid var(--ln);border-radius:10px;padding:16px 18px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--ln) transparent;tab-size:4}
+/* 區塊內要壓回 .md-body code 的換行設定，否則長行會被折斷而不是捲動 */
+.md-body pre code{background:none;padding:0;border-radius:0;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:var(--tx);white-space:pre;overflow-wrap:normal;word-break:normal}
 .md-body blockquote{border-left:3px solid var(--a2);background:var(--qb);border-radius:0 8px 8px 0;padding:14px 18px;margin:0 0 30px}
 .md-body blockquote p{margin:0}
 .md-body table{width:100%;border-collapse:collapse;font-size:14.5px;margin-bottom:34px}
@@ -56,6 +64,11 @@ a{color:var(--ac)}a:hover{color:var(--a2)}
   .page-pad-home{padding:32px 20px}
   .page-pad-md{padding:28px 16px}
   .article-pad{padding:20px 16px 40px}
+  .md-body .code-block{margin:20px 0}
+  .md-body pre{padding:13px 14px;border-radius:8px}
+  .md-body pre code{font-size:12.5px;line-height:1.7}
+  .md-body .code-block[data-lang]::before{top:9px;right:12px}
+  .md-body .code-block[data-lang] pre{padding-top:30px}
   .editor-pad{padding:16px}
   .search-grid{grid-template-columns:1fr}
   .search-preview{display:none}
